@@ -14,7 +14,6 @@ from utils import load_mgf_file, export_mgf_file
 from load_mzml import mzml_load, mzxml_load
 
 
-
 def load_checkpoint(
     config: Config,
     logger: logging
@@ -32,6 +31,8 @@ def load_checkpoint(
     spectra_hvs : 
         Restored spectra hvs array
     """
+
+    logger.debug("Entering load_checkpoint")
     ckp_parquet_file = config.checkpoint + '_meta.ckp'
     ckp_hvs_file = config.checkpoint + '_hvs.ckp'
     
@@ -47,7 +48,7 @@ def load_checkpoint(
         logger.info("Successfully restored checkpoints from {} and {}!".format(ckp_parquet_file, ckp_hvs_file))
     else:
         logger.info("Incomplete checkpoints!")
-
+    logger.debug("Exiting load_checkpoint with spectra_meta_df and spectra_hvs")
     return spectra_meta_df, spectra_hvs
 
 
@@ -68,6 +69,7 @@ def save_checkpoint(
     config : 
         Config that defines runtime parameters
     """
+    logger.debug("Entering save_checkpoint")
     ckp_parquet_file = config.checkpoint + '_meta' + '.ckp'
     ckp_hvs_file = config.checkpoint + '_hvs' + '.ckp'
 
@@ -92,6 +94,7 @@ def export_cluster_results(
     config : Config
         Runtime configuration.
     """
+    logger.debug("Entering Export cluster HD_preprocess")
     cluster_parquet_filename = config.output_filename+'.parquet'
     spectra_df['identifier'] = spectra_df.identifier.astype(str)
     spectra_df.to_parquet(cluster_parquet_filename, compression='snappy', index=False)
@@ -124,7 +127,8 @@ def export_cluster_results(
 def sort_spectra_meta_data(
     spectra_meta_df: pd.DataFrame,
     spectra_mz: np.ndarray,
-    spectra_intensity: np.ndarray
+    spectra_intensity: np.ndarray,
+    logger: logging
     ):
     """
     Re-order the spectra meta DF and related m/z+intensity array in place by charge and bucket.
@@ -146,6 +150,7 @@ def sort_spectra_meta_data(
     spectra_intensity : 
         Sorted spectra intensity array
     """
+    logger.debug("Entering Sort Spectra meta data HD clustering")
     idx = np.lexsort((spectra_meta_df["precursor_charge"].to_list(), spectra_meta_df["bucket"].to_list()))
 
     spectra_meta_df = spectra_meta_df.iloc[idx]
@@ -153,7 +158,7 @@ def sort_spectra_meta_data(
     
     spectra_mz = spectra_mz[idx] if spectra_mz is not None else spectra_mz
     spectra_intensity = spectra_intensity[idx] if spectra_intensity is not None else spectra_intensity
-
+    logger.debug("Exiting sort_spectra_meta_data HD pre")
     return spectra_meta_df, spectra_mz, spectra_intensity
 
 
@@ -311,6 +316,8 @@ def _remove_precursor_peak(
         isotope: int = 0,
     ):
     # TODO: This assumes [M+H]x charged ions.
+
+    print("Entering remove precursor peak")
     adduct_mass = 1.007825
     neutral_mass = (spectrum[2] - adduct_mass) * spectrum[1]
     c_mass_diff = 1.003355
@@ -329,6 +336,8 @@ def _remove_precursor_peak(
     # Remove the masked mz and peaks
     spectrum[6] = spectrum[6][mask]
     spectrum[7] = spectrum[7][mask]
+
+    logger.debug("exiting remove precursor peak HD pre")
     return spectrum
 
 
@@ -337,6 +346,7 @@ def get_intensity_mask(
     min_intensity: float,
     max_num_peaks: int
 ):
+    logger.debug("entering get intensity mask HD pre")
     top_intensity_idx = bn.argpartition(-intensity, max_num_peaks)[:max_num_peaks]\
         if len(intensity) > max_num_peaks else np.arange(len(intensity))
     
@@ -346,6 +356,7 @@ def get_intensity_mask(
     mask = np.zeros(intensity.size, np.bool_)
     idx = intensity[top_intensity_idx]>min_intensity
     mask[top_intensity_idx[idx]] = True
+    logger.debug("exiting get intensity mask HD pre")
     return mask
 
 
@@ -354,6 +365,7 @@ def _filter_intensity(
         min_intensity: float = 0.0,
         max_num_peaks: Optional[int] = None
     ):
+        logger.debug("entering filter intensity HD pre")
         if max_num_peaks is None:
             max_num_peaks = len(spectrum[7])
 
@@ -365,6 +377,7 @@ def _filter_intensity(
         # return update_spectrum_by_mask(spectrum, mask)
         spectrum[6] = spectrum[6][mask]
         spectrum[7] = spectrum[7][mask]
+        logger.debug("exiting filter intensity HD pre")
         return spectrum
 
 
@@ -376,6 +389,7 @@ def _scale_intensity(
         base: int = 2,
         max_rank: Optional[int] = None,
     ):
+        logger.debug("entering scale intensity HD pre")
         if scaling == "root":
             spectrum_intensity = np.power(
                 spectrum_intensity, 1 / degree
@@ -400,6 +414,7 @@ def _scale_intensity(
             spectrum_intensity = (
                 spectrum_intensity* max_intensity / spectrum_intensity.max()
             ).astype(np.float32)
+        logger.debug("exiting scale intensity HD pre")
         return spectrum_intensity
 
 @nb.njit(cache=True)
@@ -477,6 +492,7 @@ def preprocess_read_spectra_list(
     List
         The processed cluster.
     """
+    logger.debug("Entering preprocess_read_spectra_list with spectra list size HD pre%d", len(spectra_list))
     invalid_spec_list = []
     for i in range(len(spectra_list)):
         spectra_list[i] = _set_mz_range(spectra_list[i], mz_min, mz_max)
@@ -519,7 +535,7 @@ def preprocess_read_spectra_list(
     for i in invalid_spec_list:
         spectra_list[i] = -1
     spectra_list = [item for item in spectra_list if item!=-1]
-
+    logger.debug("Exiting preprocess_read_spectra_list HD pre")
     return spectra_list
 
 
@@ -541,7 +557,7 @@ def load_process_single(
     scaling: Optional[str] = 'off',
     file_type: Optional[str] = 'mgf'
 ):
-
+    logger.debug("Entering Load process single HD pre")
     #mgf mzml mzxml
     spec_list = []
     
@@ -562,7 +578,8 @@ def load_process_single(
             min_intensity = min_intensity,
             max_peaks_used = max_peaks_used,
             scaling = scaling)
-            
+    logger.debug("Exiting Load process single HD pre")
+
     return spec_list
 
 
@@ -570,6 +587,8 @@ def load_process_spectra_parallel(
     config: Config,
     logger:logging
 ):
+    logger.debug("Entering load_process_spectra_parallel HD pre")
+
     # 1. Load and preprocess spectra data from MGF files
     input_files = glob.glob(os.path.join(config.input_filepath, '*.'+config.file_type))
     files_with_size = [(file_i, os.stat(file_i).st_size/1e9) for file_i in input_files]
@@ -626,7 +645,7 @@ def load_process_spectra_parallel(
 
     parse_time = time.time() - start
     logger.info("Load and process {} spectra in {:.4f}s".format(len(spectra_meta_df), parse_time))
-    
+    logger.debug("Exiting load_process_spectra_parallel HD pre")
     return spectra_meta_df, spectra_mz, spectra_intensity
 
 
@@ -635,6 +654,7 @@ def load_raw_spectra_parallel(
     config: Config,
     logger:logging
 ):
+    logger.debug("Entering load_raw_spectra_parallel HD pre")
     # 1. Load raw spectra data from MGF files
     input_files = glob.glob(os.path.join(config.input_filepath, '*.'+config.file_type))
     files_with_size = [(file_i, os.stat(file_i).st_size/1e9) for file_i in input_files]
@@ -673,7 +693,7 @@ def load_raw_spectra_parallel(
             read_spectra_list[c] = read_spectra_list[c].astype(np.float32)
 
     read_spectra_list = read_spectra_list.sort_values(by=['precursor_charge', 'bucket'], ascending=True)
-    
+    logger.debug("Exiting load_raw_spectra_parallel HD pre")
     return read_spectra_list.reset_index(drop=True)
 
 

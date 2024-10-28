@@ -13,6 +13,8 @@ logger = logging.getLogger('HyperSpec')
 
 # @profile
 def main(args: Union[str, List[str]] = None) -> int:
+
+    logger.debug("Entering main with args: %s", args)
     # Configure logging.
     logging.captureWarnings(True)
     root = logging.getLogger()
@@ -66,20 +68,25 @@ def main(args: Union[str, List[str]] = None) -> int:
     # Restore checkpoints
     spectra_meta_df, spectra_hvs = None, None
     if config.checkpoint:
+        logger.debug("restoring Checkpoint: ")
         spectra_meta_df, spectra_hvs = hd_preprocess.load_checkpoint(
             config=config, logger=logger)
     
     if (spectra_meta_df is None) or (spectra_hvs is None):
+        print("Loading and processing spectra")
         ###################### 1. Load and parse spectra files
         spectra_meta_df, spectra_mz, spectra_intensity = hd_preprocess.load_process_spectra_parallel(config=config, logger=logger)
+        logger.info("Loaded %d spectra for clustering", len(spectra_meta_df))
         logger.info("Preserve {} spectra for cluster charges: {}".format(len(spectra_meta_df), config.cluster_charges))
         
         ###################### 2 HD Encoding for spectra
+        logger.debug("Encoding spectra")
         spectra_hvs = hd_cluster.encode_spectra(
             spectra_mz=spectra_mz, spectra_intensity=spectra_intensity, config=config, logger=logger)
 
         # Save meta and encoding data
         if config.checkpoint:
+            logger.debug("Saving Checkpoint")
             hd_preprocess.save_checkpoint(
                 spectra_meta=spectra_meta_df, spectra_hvs=spectra_hvs, 
                 config=config, logger=logger)
@@ -91,7 +98,7 @@ def main(args: Union[str, List[str]] = None) -> int:
         # Select spectra with cluster charge
         idx = spectra_meta_df['precursor_charge']==prec_charge_i
         spec_df_by_charge = spectra_meta_df.loc[idx]
-
+     
         logger.info("Start clustering Charge {} with {} spectra".format(prec_charge_i, len(spec_df_by_charge)))
         
         cluster_labels_per_charge, cluster_representatives_per_charge = hd_cluster.cluster_spectra(
@@ -107,6 +114,7 @@ def main(args: Union[str, List[str]] = None) -> int:
 
     hd_preprocess.export_cluster_results(
         spectra_df=cluster_df, config=config, logger=logger)
+    logger.debug("Exiting Main")
 
 
 if __name__ == "__main__":

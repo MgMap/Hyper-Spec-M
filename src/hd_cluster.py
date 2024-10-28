@@ -23,7 +23,7 @@ from sklearn.cluster import DBSCAN
 from config import Config
 from joblib import Parallel, delayed
 
-
+logger = logging.getLogger(__name__)
 def gen_lvs(D: int, Q: int):
     base = np.ones(D)
     base[:D//2] = -1.0
