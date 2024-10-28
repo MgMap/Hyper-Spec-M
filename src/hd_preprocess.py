@@ -129,7 +129,6 @@ def sort_spectra_meta_data(
     spectra_meta_df: pd.DataFrame,
     spectra_mz: np.ndarray,
     spectra_intensity: np.ndarray,
-    logger: logging
     ):
     """
     Re-order the spectra meta DF and related m/z+intensity array in place by charge and bucket.
@@ -318,7 +317,6 @@ def _remove_precursor_peak(
     ):
     # TODO: This assumes [M+H]x charged ions.
 
-    print("Entering remove precursor peak")
     adduct_mass = 1.007825
     neutral_mass = (spectrum[2] - adduct_mass) * spectrum[1]
     c_mass_diff = 1.003355
@@ -338,7 +336,6 @@ def _remove_precursor_peak(
     spectrum[6] = spectrum[6][mask]
     spectrum[7] = spectrum[7][mask]
 
-    logger.debug("exiting remove precursor peak HD pre")
     return spectrum
 
 
