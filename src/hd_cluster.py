@@ -646,7 +646,6 @@ def hcluster_bucket(
     config: Config,
     output_type: str='numpy'
 ):
-    logger.debug("Entering hcluster_bucket with arguments: bucket_idx, data_dict, cluster_alg, config")
 
     if bucket_slice[1]-bucket_slice[0]==0:
         return [np.array([-1]), np.array([True], dtype=np.bool)]
@@ -683,7 +682,6 @@ def hcluster_bucket(
         pw_dist = squareform(pw_dist).astype(np.float32)
         representative_mask = get_cluster_representative(
             cluster_labels=cluster_labels_refined, pw_dist=pw_dist)
-        logger.debug("Exiting hcluster_bucket with representatives")
 
         return [cluster_labels_refined, representative_mask]
  
@@ -998,7 +996,6 @@ def _postprocess_cluster(
     int
         The number of clusters after splitting on precursor m/z.
     """
-    logger.debug("Entering postProcess Cluster")
     cluster_labels[:] = -1
     # No splitting needed if there are too few items in cluster.
     # This seems to happen sometimes despite that DBSCAN requires a higher
@@ -1042,7 +1039,6 @@ def _postprocess_cluster(
             labels[non_noise_clusters] = np.unique(unique_clusters[non_noise_clusters], return_inverse=True)[1]
             cluster_labels[:] = labels[inverse]
             n_clusters = len(non_noise_clusters)
-    logger.debug("Exiting postProcess Cluster")
 
     return n_clusters
 
