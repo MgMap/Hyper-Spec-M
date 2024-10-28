@@ -37,7 +37,7 @@ def gen_lvs(D: int, Q: int):
         li = np.copy(l0)
         li[:flip] = l0[:flip] * -1
         levels.append(list(li))
-    logger.debug("Exiting gen_lvs with result of length %d", len(result))
+    logger.debug("Exiting gen_lvs with result of length")
 
     return cp.array(levels, dtype=cp.float32).ravel()
 
@@ -58,7 +58,7 @@ def gen_idhvs(D: int, totalFeatures: int, flip_factor: float):
         idx_to_flip = np.random.randint(0, D, size=nFlip)
         bases[idx_to_flip] *= (-1)
         generated_hvs.append(copy.copy(bases))
-    logger.debug("Exiting gen_idhvs with result of length %d", len(result))
+    logger.debug("Exiting gen_idhvs with result of length")
 
     return cp.array(generated_hvs, dtype=cp.float32).ravel()
 
