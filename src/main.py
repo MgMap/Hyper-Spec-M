@@ -60,6 +60,8 @@ def main(args: Union[str, List[str]] = None) -> int:
 
     logger.debug('precursor_tol = %.2f %s', *config.precursor_tol)
     logger.debug('rt_tol = %s', config.rt_tol)
+    print("This is not printing")
+    logger.debug('Should be printing right?')
     logger.debug('cluster_alg = %s', config.cluster_alg)
     logger.debug('fragment_tol = %.2f', config.fragment_tol)
     logger.debug('eps = %.3f', config.eps)

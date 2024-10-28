@@ -19,14 +19,14 @@ ENV PATH /opt/conda/bin:$PATH
 # setup conda virtual environment
 COPY ./docker/requirements.yaml /tmp/requirements.yaml
 RUN conda update conda \
-    && conda env create --name hyper-spec -f /tmp/requirements.yaml
+        && conda env create --name hyper-spec -f /tmp/requirements.yaml
 
 RUN echo "conda activate hyper-spec" >> ~/.bashrc
 ENV PATH /opt/conda/envs/hyper-spec/bin:$PATH
 ENV CONDA_DEFAULT_ENV $hyper-spec
 
 # Clone the code
-RUN git clone https://github.com/murbina05/Hyper-Spec.git 
+RUN git clone https://github.com/MgMap/Hyper-Spec-M.git
 
 # set working dir
 WORKDIR /Hyper-Spec
