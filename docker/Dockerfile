@@ -29,7 +29,7 @@ ENV CONDA_DEFAULT_ENV $hyper-spec
 RUN git clone https://github.com/MgMap/Hyper-Spec-M.git
 
 # set working dir
-WORKDIR /Hyper-Spec
+WORKDIR /Hyper-Spec-M
 
 # Install and build  
 RUN bash ./install.sh 
