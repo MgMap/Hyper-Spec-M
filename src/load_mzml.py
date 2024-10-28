@@ -22,9 +22,10 @@ temp_charge = 2
 temp_mz = 150.0
 
 
-#logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 def mzxml_load(filename):
+    logger.debug("Entering mzxml_load with filename: %s", filename)
     query_filename = filename
     spectra_list = []
     for spectrum in read_mzxml(query_filename):
@@ -33,7 +34,7 @@ def mzxml_load(filename):
                             -1, spectrum.precursor_charge, spectrum.precursor_mz,
                             query_filename, spectrum.identifier, float(spectrum.retention_time * 1000), spectrum.mz,
                             spectrum.intensity])
-    
+    logger.debug("Exiting mzxml_load with %d spectra", len(spectra_list))
     return spectra_list
 
     
@@ -64,11 +65,15 @@ def mzxml_load(filename):
     # return spectra_list
 
 def appending(spectrum, filename):
+    logger.debug("Appending spectrum from filename: %s", filename)
+
     return [-1, spectrum.precursor_charge, spectrum.precursor_mz,
                             filename, spectrum.identifier, spectrum.mz,
                             spectrum.intensity]
 
 def mzml_load(filename):
+    logger.debug("Entering mzml_load with filename: %s", filename)
+
     spectra_list = []
     # start = time.time()
 
@@ -103,10 +108,12 @@ def mzml_load(filename):
                             -1, spectrum.precursor_charge, spectrum.precursor_mz,
                             query_filename, spectrum.identifier, float(spectrum.retention_time * 1000), spectrum.mz,
                             spectrum.intensity])
-    
+    logger.debug("Exiting mzml_load with %d spectra", len(spectra_list))
     return spectra_list
 
 def convert_mzxml_mgf(filename):
+    logger.debug("Entering convert_mzxml_mgf with filename: %s", filename)
+
     query_filename = filename
     print("works")
     #load_process_single("b1906_293T_proteinID_01A_QE3_122212.mgf")
@@ -172,12 +179,16 @@ def convert_mzxml_mgf(filename):
     #     # read_spectra_list.append([-1, ])
     #     return
     fp.close()
+    logger.debug("Exiting convert_mzxml_mgf")
+
     print("done")
 
 
 
 
 def convert_mzml_mgf(filename):
+    logger.debug("Entering convert_mzml_mgf with filename: %s", filename)
+
     query_filename = filename
     print("works")
     #load_process_single("b1906_293T_proteinID_01A_QE3_122212.mgf")
@@ -242,6 +253,7 @@ def convert_mzml_mgf(filename):
 
     #     # read_spectra_list.append([-1, ])
     #     return
+    logger.debug("Exiting convert_mzml_mgf")
     fp.close()
     print("done")
     
@@ -260,6 +272,7 @@ def load_process_single(
     max_peaks_used: Optional[int] = 50,
     scaling: Optional[str] = 'off'
 ):
+    logger.debug("Entering load_process_single with file=%s", file)
     spec_list = fast_mgf_parse(file)
     
     if if_preprocess:
@@ -272,7 +285,7 @@ def load_process_single(
             min_intensity = min_intensity,
             max_peaks_used = max_peaks_used,
             scaling = scaling)
-
+    logger.debug("Exiting load_process_single with %d spectra", len(spec_list))
     return spec_list
 
 
@@ -291,6 +304,8 @@ def read_mzml(source: Union[IO, str]) -> Iterator[MsmsSpectrum]:
     Iterator[MsmsSpectrum]
         An iterator over the requested spectra in the given file.
     """
+    logger.debug("Entering read_mzml with source=%s", source)
+
     print("start")
 
     #TODO 
@@ -312,6 +327,8 @@ def read_mzml(source: Union[IO, str]) -> Iterator[MsmsSpectrum]:
                                        spectrum['id'], e)
         except LxmlError as e:
             logger.warning('Failed to read file %s: %s', source, e)
+    logger.debug("Exiting read_mzml")
+
 def _parse_spectrum_mzml(spectrum_dict: Dict) -> MsmsSpectrum:
     """
     Parse the Pyteomics spectrum dict.
@@ -333,6 +350,7 @@ def _parse_spectrum_mzml(spectrum_dict: Dict) -> MsmsSpectrum:
         - Not an MS/MS spectrum.
         - Unknown precursor charge.
     """
+    logger.debug("Entering _parse_spectrum_mzml")
     spectrum_id = spectrum_dict['id']
     global temp_charge
     global temp_mz
@@ -364,6 +382,8 @@ def _parse_spectrum_mzml(spectrum_dict: Dict) -> MsmsSpectrum:
 
     spectrum = MsmsSpectrum(str(scan_nr), precursor_mz, precursor_charge,
                             mz_array, intensity_array, retention_time)
+    logger.debug("Exiting _parse_spectrum_mzml with spectrum_id %s", spectrum_id)
+
     return spectrum
 
 def read_mzxml(source: Union[IO, str]) -> Iterator[MsmsSpectrum]:

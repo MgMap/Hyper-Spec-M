@@ -13,6 +13,7 @@ from config import Config
 from utils import load_mgf_file, export_mgf_file
 from load_mzml import mzml_load, mzxml_load
 
+logger = logging.getLogger('HyperSpec')
 
 def load_checkpoint(
     config: Config,
