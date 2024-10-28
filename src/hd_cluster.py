@@ -635,7 +635,7 @@ def cluster_bucket(
         
         representative_mask = get_cluster_representative(
             cluster_labels=cluster_labels_refined, pw_dist=pw_dist)
-        logger.debug("Exiting cluster_bucket with %d representatives", len(representatives))
+        logger.debug("Exiting cluster_bucket with representatives")
 
         return [cluster_labels_refined, representative_mask]
 
@@ -684,7 +684,7 @@ def hcluster_bucket(
         pw_dist = squareform(pw_dist).astype(np.float32)
         representative_mask = get_cluster_representative(
             cluster_labels=cluster_labels_refined, pw_dist=pw_dist)
-        logger.debug("Exiting hcluster_bucket with %d representatives", len(representatives))
+        logger.debug("Exiting hcluster_bucket with representatives")
 
         return [cluster_labels_refined, representative_mask]
  
