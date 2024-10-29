@@ -4,6 +4,9 @@ gc.enable()
 from typing import Union, List
 from config import * 
 
+import cProfile
+import pstats
+
 import tqdm
 import pandas as pd
 
@@ -120,5 +123,13 @@ def main(args: Union[str, List[str]] = None) -> int:
 
 
 if __name__ == "__main__":
-    main()
+    # Profile the main function
+    with cProfile.Profile() as profiler:
+        main()
+    # Save and display profiling results
+    profiler.dump_stats("profile_output.prof")
+    
+    # Use pstats to sort and view profile statistics
+    stats = pstats.Stats(profiler)
+    stats.strip_dirs() 
 
