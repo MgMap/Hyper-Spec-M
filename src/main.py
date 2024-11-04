@@ -17,7 +17,6 @@ logger = logging.getLogger('HyperSpec')
 # @profile
 def main(args: Union[str, List[str]] = None) -> int:
 
-    logger.debug("Entering main with args: %s", args)
     # Configure logging.
     logging.captureWarnings(True)
     root = logging.getLogger()
@@ -63,8 +62,6 @@ def main(args: Union[str, List[str]] = None) -> int:
 
     logger.debug('precursor_tol = %.2f %s', *config.precursor_tol)
     logger.debug('rt_tol = %s', config.rt_tol)
-    print("This is not printing")
-    logger.debug('Should be printing right?')
     logger.debug('cluster_alg = %s', config.cluster_alg)
     logger.debug('fragment_tol = %.2f', config.fragment_tol)
     logger.debug('eps = %.3f', config.eps)
@@ -73,25 +70,21 @@ def main(args: Union[str, List[str]] = None) -> int:
     # Restore checkpoints
     spectra_meta_df, spectra_hvs = None, None
     if config.checkpoint:
-        logger.debug("restoring Checkpoint: ")
         spectra_meta_df, spectra_hvs = hd_preprocess.load_checkpoint(
             config=config, logger=logger)
     
     if (spectra_meta_df is None) or (spectra_hvs is None):
-        print("Loading and processing spectra")
         ###################### 1. Load and parse spectra files
         spectra_meta_df, spectra_mz, spectra_intensity = hd_preprocess.load_process_spectra_parallel(config=config, logger=logger)
         logger.info("Loaded %d spectra for clustering", len(spectra_meta_df))
         logger.info("Preserve {} spectra for cluster charges: {}".format(len(spectra_meta_df), config.cluster_charges))
         
         ###################### 2 HD Encoding for spectra
-        logger.debug("Encoding spectra")
         spectra_hvs = hd_cluster.encode_spectra(
-            spectra_mz=spectra_mz, spectra_intensity=spectra_intensity, config=config, logger=logger)
+        spectra_mz=spectra_mz, spectra_intensity=spectra_intensity, config=config, logger=logger)
 
         # Save meta and encoding data
         if config.checkpoint:
-            logger.debug("Saving Checkpoint")
             hd_preprocess.save_checkpoint(
                 spectra_meta=spectra_meta_df, spectra_hvs=spectra_hvs, 
                 config=config, logger=logger)
@@ -119,7 +112,7 @@ def main(args: Union[str, List[str]] = None) -> int:
 
     hd_preprocess.export_cluster_results(
         spectra_df=cluster_df, config=config, logger=logger)
-    logger.debug("Exiting Main")
+
 
 
 if __name__ == "__main__":
