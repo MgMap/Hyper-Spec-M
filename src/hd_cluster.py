@@ -27,7 +27,6 @@ logger = logging.getLogger(__name__)
 
 def gen_lvs(D: int, Q: int):
 
-    logger.debug("Entering gen_lvs with D=%d, Q=%d", D, Q)
     base = np.ones(D)
     base[:D//2] = -1.0
     l0 = np.random.permutation(base)
@@ -37,13 +36,11 @@ def gen_lvs(D: int, Q: int):
         li = np.copy(l0)
         li[:flip] = l0[:flip] * -1
         levels.append(list(li))
-    logger.debug("Exiting gen_lvs with result of length")
 
     return cp.array(levels, dtype=cp.float32).ravel()
 
 
 def gen_idhvs(D: int, totalFeatures: int, flip_factor: float):
-    logger.debug("Entering gen_idhvs with D=%d, totalFeatures=%d, flip_factor=%.2f", D, totalFeatures, flip_factor)
 
     nFlip = int(D//flip_factor)
 
@@ -58,7 +55,6 @@ def gen_idhvs(D: int, totalFeatures: int, flip_factor: float):
         idx_to_flip = np.random.randint(0, D, size=nFlip)
         bases[idx_to_flip] *= (-1)
         generated_hvs.append(copy.copy(bases))
-    logger.debug("Exiting gen_idhvs with result of length")
 
     return cp.array(generated_hvs, dtype=cp.float32).ravel()
 
@@ -70,7 +66,6 @@ def gen_lv_id_hvs(
     id_flip_factor: float,
     logger: logging
 ):
-    logger.debug("Entering gen_lv_id_hvs with arguments: D=%d, Q=%d, bin_len=%d, id_flip_factor=%f", D, Q, bin_len, id_flip_factor)
 
     lv_id_hvs_file = 'lv_id_hvs_D_{}_Q_{}_bin_{}_flip_{}.npz'.format(D, Q, bin_len, id_flip_factor)
     if os.path.exists(lv_id_hvs_file):
@@ -83,12 +78,10 @@ def gen_lv_id_hvs(
         id_hvs = gen_idhvs(D, bin_len, id_flip_factor)
         id_hvs = cuda_bit_packing(id_hvs, bin_len, D)
         cp.savez(lv_id_hvs_file, lv_hvs=lv_hvs, id_hvs=id_hvs)
-    logger.debug("Exiting gen_lv_id_hvs")
     return lv_hvs, id_hvs
 
 
 def cuda_bit_packing(orig_vecs, N, D):
-    logger.debug("Entering cuda_bit_packing with arguments: orig_vecs (shape=%s), N=%d, D=%d", orig_vecs.shape, N, D)
 
     pack_len = (D+32-1)//32
     packed_vecs = cp.zeros(N * pack_len, dtype=cp.uint32)
@@ -113,13 +106,11 @@ def cuda_bit_packing(orig_vecs, N, D):
                     ''', 'packing')
     threads = 1024
     packing_cuda_kernel(((D + threads - 1) // threads, N), (threads,), (packed_vecs, orig_vecs, D, pack_len, N))
-    logger.debug("Exiting cuda_bit_packing with packed_vecs of shape %s", packed_vecs.shape)
 
     return packed_vecs.reshape(N, pack_len)
 
 
 def hd_encode_spectra_packed(spectra_intensity, spectra_mz, id_hvs_packed, lv_hvs_packed, N, D, Q, output_type):
-    logger.debug("Entering hd_encode_spectra_packed")
 
     packed_dim = (D + 32 - 1) // 32
     encoded_spectra = cp.zeros(N * packed_dim, dtype=cp.uint32)
@@ -180,7 +171,6 @@ def hd_encode_spectra_packed(spectra_intensity, spectra_mz, id_hvs_packed, lv_hv
     hd_enc_lvid_packed_cuda_kernel(
         ((D + threads - 1) // threads, min(N, max_block)), (threads,), 
         (id_hvs_packed, lv_hvs_packed, spectra_mz, spectra_intensity, max_peaks_used, encoded_spectra, N, Q, D, packed_dim))
-    logger.debug("Exiting hd_encode_spectra_packed with encoded_spectra shape")
 
     if output_type=='numpy':
         return encoded_spectra.reshape(N, packed_dim).get()
@@ -417,7 +407,6 @@ def encode_cluster_spectra_bucket(
     output_type: str='numpy'
 )-> List:
     
-    logger.debug("Entering encode cluster spectra bucket")
     start = time.time()
 
     num_batch = len(spectra_df)//batch_size+1
@@ -448,7 +437,6 @@ def encode_cluster_spectra_bucket(
         if output_type=='numpy' else encoded_spectra
 
     logger.info("Encode {} spectra in {:.4f}s".format(len(encoded_spectra), time.time()-start))
-    logger.debug("Exiting encode cluster spectra bucket")
 
     return encoded_spectra
 
@@ -481,7 +469,6 @@ def encode_preprocessed_spectra(
     batch_size: int = 5000,
     output_type: str='numpy'
 )-> List:
-    logger.debug("Entering encode_preprocessed_spectra")
     start = time.time()
 
     num_spectra = len(spectra_df)
@@ -513,7 +500,6 @@ def encode_preprocessed_spectra(
         if output_type=='numpy' else encoded_spectra
 
     logger.info("Encode {} spectra in {:.4f}s".format(len(encoded_spectra), time.time()-start))
-    logger.debug("Exiting encode_preprocessed_spectra")
 
     return encoded_spectra
 
@@ -527,7 +513,6 @@ def encode_spectra(
     output_type: str='numpy'
 )-> np.ndarray:
     start = time.time()
-    logger.debug("Entering encode_spectra with arguments: spectra_mz, spectra_intensity, config, logger")
 
     # Generate LV-ID hypervectors
     bin_len, min_mz, max_mz = get_dim(config.min_mz, config.max_mz, config.fragment_tol)
@@ -551,7 +536,6 @@ def encode_spectra(
         if output_type=='numpy' else encoded_spectra
 
     logger.info("Encode {} spectra in {:.4f}s".format(len(encoded_spectra), time.time()-start))
-    logger.debug("Exiting encode_spectra with %d encoded spectra", num_spectra)
 
     return encoded_spectra
 
@@ -560,7 +544,6 @@ def _get_bucket_idx_list(
     spectra_by_charge_df: pd.DataFrame,
     logger: logging
 ):
-    logger.debug("Entering _get_bucket_idx_list with arguments: spectra_by_charge_df, logger")
 
     # Get bucket list
     buckets = spectra_by_charge_df.bucket.unique()
@@ -580,7 +563,6 @@ def _get_bucket_idx_list(
     logger.info("Bucket size distribution:")
     for i in range(len(bins)-1):
         logger.info("{:.2f}% of bucket size between {} and {}".format(hist[i]/num_bucket*100, bins[i], bins[i+1]))
-    logger.debug("Exiting _get_bucket_idx_list")
 
     return bucket_idx_arr, bucket_size_arr
 
@@ -589,7 +571,6 @@ def schedule_bucket(
     spectra_by_charge_df: pd.DataFrame,
     logger: logging
 ):
-    logger.debug("Entering schedule_bucket with arguments: spectra_by_charge_df, logger")
 
     bucket_idx_arr, bucket_size_arr = _get_bucket_idx_list(spectra_by_charge_df, logger)
 
@@ -730,7 +711,6 @@ def cluster_spectra(
 ):
     # Save data to shared memory
     start = time.time()
-    logger.debug("Entering cluster_spectra with arguments: spectra_by_charge_df, encoded_spectra_hv, config, logger")
 
     data_dict = {
         'hv': encoded_spectra_hv, 
@@ -793,7 +773,6 @@ def cluster_spectra(
     representative_mask = np.hstack([res_i[1] for res_i in cluster_results])
     
     logger.info("{} clustering in {:.4f} s".format(cluster_device, time.time()-start))
-    logger.debug("Exiting cluster_spectra with %d clusters", len(cluster_labels))
 
     return cluster_labels, representative_mask
 
@@ -807,7 +786,6 @@ def cluster_encoded_spectra(
 ):
     # Save data to shared memory
     start = time.time()
-    logger.debug("Entering cluster_encoded_spectra")
     data_dict = {
         'hv': encoded_spectra_hv, 
         'prec_mz': np.vstack(spectra_by_charge_df.precursor_mz).astype(np.float32),
@@ -871,7 +849,6 @@ def cluster_encoded_spectra(
     representative_mask = np.hstack([res_i[1] for res_i in cluster_results])
     
     logger.info("{} clustering in {:.4f} s".format(cluster_device, time.time()-start))
-    logger.debug("Exiting cluster_encoded_spectra")
 
     return cluster_labels, representative_mask
 
@@ -917,7 +894,6 @@ def assign_unique_cluster_labels(bucket_cluster_labels):
     '''
         Re-order and assign unique cluster labels for spectra from different charges
     '''
-    logger.debug("Entering assign_unique cluster labels")
     reorder_labels, label_base = [], 0
     for idx_i, cluster_i in enumerate(bucket_cluster_labels):
         cluster_i = cluster_i.flatten()
@@ -931,7 +907,6 @@ def assign_unique_cluster_labels(bucket_cluster_labels):
         label_base += (num_clusters+num_noises)
 
         reorder_labels.append(cluster_i)
-    logger.debug("Exiting assign_unique cluster labels")
 
     return reorder_labels
 
