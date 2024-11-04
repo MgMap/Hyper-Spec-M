@@ -579,8 +579,6 @@ def schedule_bucket(
     sorted_bucket_idx_arr = bucket_idx_arr[sort_idx]
 
     reorder_idx = np.argsort(sort_idx)
-    logger.debug("Exiting schedule_bucket")
-
     return {
         'sort_bucket_idx_arr': sorted_bucket_idx_arr, 
         'reorder_idx': reorder_idx}
