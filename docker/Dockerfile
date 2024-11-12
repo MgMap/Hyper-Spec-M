@@ -25,6 +25,15 @@ RUN echo "conda activate hyper-spec" >> ~/.bashrc
 ENV PATH /opt/conda/envs/hyper-spec/bin:$PATH
 ENV CONDA_DEFAULT_ENV $hyper-spec
 
+# Install Nsight Compute
+RUN wget https://developer.nvidia.com/downloads/assets/tools/secure/nsight-compute/2024_3_1/nsight-compute-linux-2024.3.1.2-34702747.run && \
+    chmod +x nsight-compute-linux-2024.3.1.2-34702747.run && \
+    ./nsight-compute-linux-2024.3.1.2-34702747.run && \
+    rm nsight-compute-linux-2024.3.1.2-34702747.run
+
+# Add Nsight Compute to PATH
+ENV PATH=$PATH:/usr/local/NVIDIA-Nsight-Compute
+
 # Clone the code
 RUN git clone https://github.com/MgMap/Hyper-Spec-M.git
 
