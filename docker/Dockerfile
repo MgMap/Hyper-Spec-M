@@ -4,6 +4,13 @@ FROM nvidia/cuda:11.8.0-runtime-ubuntu22.04
 RUN apt-get update && apt-get install -y time wget g++ libboost-all-dev git && \
         apt-get clean
 
+RUN wget https://developer.nvidia.com/downloads/assets/tools/secure/nsight-compute/2024_3_1/nsight-compute-linux-2024.3.1.2-34702747.run && \
+        chmod +x nsight-compute-linux-2024.3.1.2-34702747.run
+        #./nsight-compute-linux-2024.3.1.2-34702747.run && \
+        #rm nsight-compute-linux-2024.3.1.2-34702747.run
+
+#ENV PATH=$PATH:/usr/local/NVIDIA-Nsight-Compute
+
 RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/anaconda.sh && \
         /bin/bash ~/anaconda.sh -b -p /opt/conda && \
         rm ~/anaconda.sh && \
@@ -26,13 +33,13 @@ ENV PATH /opt/conda/envs/hyper-spec/bin:$PATH
 ENV CONDA_DEFAULT_ENV $hyper-spec
 
 # Install Nsight Compute
-RUN wget https://developer.nvidia.com/downloads/assets/tools/secure/nsight-compute/2024_3_1/nsight-compute-linux-2024.3.1.2-34702747.run && \
-    chmod +x nsight-compute-linux-2024.3.1.2-34702747.run && \
-    ./nsight-compute-linux-2024.3.1.2-34702747.run && \
-    rm nsight-compute-linux-2024.3.1.2-34702747.run
+# RUN wget https://developer.nvidia.com/downloads/assets/tools/secure/nsight-compute/2024_3_1/nsight-compute-linux-2024.3.1.2-34702747.run && \
+#     chmod +x nsight-compute-linux-2024.3.1.2-34702747.run && \
+#     ./nsight-compute-linux-2024.3.1.2-34702747.run && \
+#     rm nsight-compute-linux-2024.3.1.2-34702747.run
 
-# Add Nsight Compute to PATH
-ENV PATH=$PATH:/usr/local/NVIDIA-Nsight-Compute
+# # Add Nsight Compute to PATH
+# ENV PATH=$PATH:/usr/local/NVIDIA-Nsight-Compute
 
 # Clone the code
 RUN git clone https://github.com/MgMap/Hyper-Spec-M.git
