@@ -1,16 +1,24 @@
-FROM nvidia/cuda:11.8.0-runtime-ubuntu22.04
+FROM ubuntu:22.04
 
-# Update and install mini-conda
-RUN apt-get update && apt-get install -y time wget g++ libboost-all-dev git && \
-        apt-get clean
+# Install essential packages
+RUN apt-get update && apt-get install -y \
+    time wget g++ libboost-all-dev git && \
+    apt-get clean
 
-RUN wget https://developer.nvidia.com/downloads/assets/tools/secure/nsight-compute/2024_3_1/nsight-compute-linux-2024.3.1.2-34702747.run && \
-        chmod +x nsight-compute-linux-2024.3.1.2-34702747.run
-        #./nsight-compute-linux-2024.3.1.2-34702747.run && \
-        #rm nsight-compute-linux-2024.3.1.2-34702747.run
+# Install CUDA Toolkit
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/cuda-keyring_1.1-1_all.deb && \
+        dpkg -i cuda-keyring_1.1-1_all.deb && \
+        apt-get update && \
+        apt-get -y install cuda-toolkit-12-6 && \
+        rm -f cuda-keyring_1.1-1_all.deb
 
-#ENV PATH=$PATH:/usr/local/NVIDIA-Nsight-Compute
+RUN apt-get install -y nsight-compute-2024.3.2
 
+# Set CUDA environment variables
+ENV PATH="/usr/local/cuda/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
+
+# Install Miniconda
 RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/anaconda.sh && \
         /bin/bash ~/anaconda.sh -b -p /opt/conda && \
         rm ~/anaconda.sh && \
@@ -31,15 +39,6 @@ RUN conda update conda \
 RUN echo "conda activate hyper-spec" >> ~/.bashrc
 ENV PATH /opt/conda/envs/hyper-spec/bin:$PATH
 ENV CONDA_DEFAULT_ENV $hyper-spec
-
-# Install Nsight Compute
-# RUN wget https://developer.nvidia.com/downloads/assets/tools/secure/nsight-compute/2024_3_1/nsight-compute-linux-2024.3.1.2-34702747.run && \
-#     chmod +x nsight-compute-linux-2024.3.1.2-34702747.run && \
-#     ./nsight-compute-linux-2024.3.1.2-34702747.run && \
-#     rm nsight-compute-linux-2024.3.1.2-34702747.run
-
-# # Add Nsight Compute to PATH
-# ENV PATH=$PATH:/usr/local/NVIDIA-Nsight-Compute
 
 # Clone the code
 RUN git clone https://github.com/MgMap/Hyper-Spec-M.git

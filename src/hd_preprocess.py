@@ -182,7 +182,7 @@ def _precursor_to_interval(
         The index of the interval to which a spectrum with the given m/z and
         charge belongs.
     """
-    hydrogen_mass, cluster_width = 1.00794, 1.0005079 * 8
+    hydrogen_mass, cluster_width = 1.00794, 1.0005079 * 16
     neutral_mass = (mz - hydrogen_mass) * max(abs(charge), 1)
     return round(neutral_mass / cluster_width) // interval_width
 
