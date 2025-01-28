@@ -585,14 +585,6 @@ def load_process_single(
         after_min_peaks = len(spec_list)
         print(f"Removed {original_count - after_min_peaks} spectra due to min_peaks and min_mz_range")
         
-        after_mz_filter = len(spec_list)
-        print(f"Removed {after_min_peaks - after_mz_filter} spectra due to m/z range filtering")
-        
-        after_precursor_removal = len(spec_list)
-        print(f"Removed {after_mz_filter - after_precursor_removal} spectra due to precursor removal tolerance")
-        
-        after_intensity_filter = len(spec_list)
-        print(f"Removed {after_precursor_removal - after_intensity_filter} spectra due to intensity filtering")
     print(f"Total spectra after filtering: {len(spec_list)}")
 
     return spec_list
