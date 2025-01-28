@@ -586,7 +586,7 @@ def load_process_single(
     #     print(f"Removed {original_count - after_min_peaks} spectra due to min_peaks and min_mz_range")
         
     print(f"Total spectra after filtering: {len(spec_list)}")
-
+    print(spec_list)
     return spec_list
 
 
