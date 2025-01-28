@@ -119,7 +119,11 @@ class Config:
             choices=['off', 'root', 'log', 'rank'],
             help='Peak scaling method used to reduce the influence of very '
                  'intense peaks (default: %(default)s).')
-
+        # Add the new argument to the configuration parser
+        self._parser.add_argument(
+            '--no_limitations', action='store_true',
+            help='Remove all filtering constraints to load all spectra.')
+        
         # CLUSTERING
         self._parser.add_argument(
             '--hd_dim', default=2048, type=int,

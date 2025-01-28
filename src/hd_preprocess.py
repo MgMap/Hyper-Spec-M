@@ -549,8 +549,18 @@ def load_process_single(
     max_peaks_used: Optional[int] = 50,
     scaling: Optional[str] = 'off',
     file_type: Optional[str] = 'mgf',
+    no_limitations: bool = False
 ):
     #mgf mzml mzxml
+    if no_limitations:
+        min_peaks = 1
+        min_mz_range = 0.0
+        mz_min = None
+        mz_max = None
+        remove_precursor_tolerance = 0.0
+        min_intensity = 0.0
+        max_peaks_used = 10000  # Arbitrary high number
+        scaling = 'off'
     spec_list = []
     
     if(file_type == "mgf"):
@@ -599,8 +609,9 @@ def load_process_spectra_parallel(
                 min_intensity = config.min_intensity,
                 max_peaks_used = config.max_peaks_used,
                 scaling = config.scaling,
-                file_type = config.file_type) \
-                for f_i in tqdm.tqdm(input_files))
+                file_type = config.file_type,
+                no_limitations = config.no_limitations)
+            for f_i in tqdm.tqdm(input_files))
 
     spectra_mz = np.array([j[6] for i in read_spectra_list for j in i], dtype=np.float32)
     spectra_intensity = np.array([j[7] for i in read_spectra_list for j in i], dtype=np.float32)
