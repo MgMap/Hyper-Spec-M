@@ -572,6 +572,7 @@ def load_process_single(
         spec_list = mzml_load(file)
 
     if if_preprocess:
+        original_count = len(spec_list)
         spec_list = preprocess_read_spectra_list(
             spectra_list = spec_list,
             min_peaks = min_peaks, min_mz_range = min_mz_range,
@@ -581,6 +582,17 @@ def load_process_single(
             min_intensity = min_intensity,
             max_peaks_used = max_peaks_used,
             scaling = scaling)
+        after_min_peaks = len(spec_list)
+        print(f"Removed {original_count - after_min_peaks} spectra due to min_peaks and min_mz_range")
+        
+        after_mz_filter = len(spec_list)
+        print(f"Removed {after_min_peaks - after_mz_filter} spectra due to m/z range filtering")
+        
+        after_precursor_removal = len(spec_list)
+        print(f"Removed {after_mz_filter - after_precursor_removal} spectra due to precursor removal tolerance")
+        
+        after_intensity_filter = len(spec_list)
+        print(f"Removed {after_precursor_removal - after_intensity_filter} spectra due to intensity filtering")
     print(f"Total spectra after filtering: {len(spec_list)}")
 
     return spec_list
