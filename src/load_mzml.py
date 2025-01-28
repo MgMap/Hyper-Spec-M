@@ -111,76 +111,39 @@ def mzml_load(filename):
     logger.debug("Exiting mzml_load with %d spectra", len(spectra_list))
     return spectra_list
 
-def convert_mzxml_mgf(filename):
-    logger.debug("Entering convert_mzxml_mgf with filename: %s", filename)
+def convert_mzxml_mgf(input_file: str, output_file: str):
+    """
+    Convert mzXML to MGF format and write to the output file.
 
-    query_filename = filename
-    print("works")
-    #load_process_single("b1906_293T_proteinID_01A_QE3_122212.mgf")
-    # fp = open("test.txt", "w")
-    fp = open("./test.txt", "w")
+    Parameters
+    ----------
+    input_file : str
+        Path to the mzXML input file.
+    output_file : str
+        Path to the MGF output file.
+    """
+    logger.debug("Entering convert_mzxml_mgf with input: %s, output: %s", input_file, output_file)
 
+    with open(output_file, 'w') as fp:
+        for spectrum in read_mzxml(input_file):
+            precursor_mz = spectrum.precursor_mz
+            retention_time = spectrum.retention_time
+            precursor_charge = spectrum.precursor_charge
+            mz_array = spectrum.mz
+            intensity_array = spectrum.intensity
 
-    for spectrum in read_mzxml(query_filename):
+            fp.write("BEGIN IONS\n")
+            fp.write(f"TITLE={spectrum.identifier}\n")
+            fp.write(f"PEPMASS={precursor_mz}\n")
+            fp.write(f"RTINSECONDS={retention_time}\n")
+            fp.write(f"CHARGE={precursor_charge}+\n")
 
-        # fp.write("BEGIN IONS\n")
-        # fp.write("TITLE=temp")  
-        # fp.write("SCANS=%s", spectrum.identifier)
-        # fp.write("") 
+            for mz, intensity in zip(mz_array, intensity_array):
+                fp.write(f"{mz} {intensity}\n")
 
-        # print("BEGIN IONS")
-        # print("TITLE=not needed")
-        # print("SCANS=%s" % spectrum.identifier)
-        # print("PEPMAS=%s" % spectrum.precursor_mz)
-        # print("RTINSECONDS=%s" % (float(spectrum.retention_time) * 1000))
-        # print("CHARGE=%s+" % spectrum.precursor_charge)
+            fp.write("END IONS\n\n")
 
-
-        # for i in range(len(spectrum.mz)):
-        #     print("%s %s" % (spectrum.mz[i], spectrum.intensity[i]))
-        # print("END IONS")
-
-
-        fp.write("BEGIN IONS\n")
-        fp.write("TITLE=not needed\n")
-        fp.write("SCANS=%s\n" % spectrum.identifier)
-        fp.write("PEPMAS=%s\n" % spectrum.precursor_mz)
-        rtn_seconds = float(spectrum.retention_time) * 1000
-        fp.write("RTINSECONDS=%f\n" % rtn_seconds)
-        fp.write(("CHARGE=%s+\n" % spectrum.precursor_charge))
-
-        for i in range(len(spectrum.mz)):
-            fp.write("%s %s\n" % (spectrum.mz[i], spectrum.intensity[i]))
-
-        fp.write("END IONS\n")
-
-    # read_spectra_list = []
-    # for i, spectrum in enumerate(mzml.read(query_filename)):
-    #     print('\n Scan List: ', spectrum['scanList'])
-                
-    #     #print(spectrum['m/z array'])
-
-    #     #print(spectrum['intensity arrayu]'])
-
-    #     #print(spectrum['MS1 spectrum'])
-
-    #     print('\n Title:', spectrum['spectrum title'])
-
-    #     #print('\n MS1 spectrum: ', spectrum['MS1 spectrum'])
-
-    #     print('\n Id: ', spectrum['id'])
-
-    #     print('\n Base Peak Intensity: ', spectrum['base peak intensity'])
-
-    #     print('\n Max mz: ', spectrum['highest observed m/z'])
-
-    #     print('\n Min mz: ', spectrum['lowest observed m/z'])
-
-    #     # read_spectra_list.append([-1, ])
-    #     return
-    fp.close()
-
-    print("done")
+    logger.info("Finished writing MGF to %s", output_file)
 
 
 
@@ -392,29 +355,14 @@ def read_mzxml(source: Union[IO, str]) -> Iterator[MsmsSpectrum]:
     Iterator[MsmsSpectrum]
         An iterator over the requested spectra in the given file.
     """
-
     with mzxml.MzXML(source) as f_in:
-        try:
-            parsed_spectrum = map(_parse_spectrum_mzxml, f_in)
-            yield parsed_spectrum
+        for spectrum in f_in:
+            if int(spectrum.get('msLevel', -1)) == 2:  # Only process MS/MS spectra
+                try:
+                    yield _parse_spectrum_mzxml(spectrum)
+                except ValueError as e:
+                    logger.warning("Failed to parse spectrum %s: %s", spectrum.get('id', 'unknown'), e)
 
-        #     for i, spectrum in enumerate(f_in):
-        #         if int(spectrum.get('msLevel', -1)) == 2:
-        #             try:
-        #                 print(i)
-        #                 #with cProfile.Profile() as profile:
-        #                 parsed_spectrum = _parse_spectrum_mzxml(spectrum)
-        #                 parsed_spectrum.index = i
-        #                 parsed_spectrum.is_processed = False
-        #                 yield parsed_spectrum
-        #                 # results = pstats.Stats(profile)
-        #                 # results.sort_stats(pstats.SortKey.TIME)
-        #                 # results.print_stats()
-        #             except ValueError as e:
-        #                 logger.warning(f'Failed to read spectrum %s: %s',
-        #                                spectrum['id'], e)
-        except LxmlError as e:
-            logger.warning('Failed to read file %s: %s', source, e)
 
     '''
     start = time.time()
@@ -457,32 +405,23 @@ def _parse_spectrum_mzxml(spectrum_dict: Dict) -> MsmsSpectrum:
 
     Raises
     ------
-    ValueError: The spectrum can't be parsed correctly:
-        - Not an MS/MS spectrum.
-        - Unknown precursor charge.
+    ValueError: If the spectrum can't be parsed correctly.
     """
-    start = time.time()
-    scan_nr = int(spectrum_dict['id'])
+    scan_nr = int(spectrum_dict.get('id', -1))
 
     if int(spectrum_dict.get('msLevel', -1)) != 2:
-        raise ValueError(f'Unsupported MS level {spectrum_dict["msLevel"]}')
+        raise ValueError(f"Unsupported MS level {spectrum_dict.get('msLevel')}")
 
     mz_array = spectrum_dict['m/z array']
     intensity_array = spectrum_dict['intensity array']
-    retention_time = spectrum_dict['retentionTime']
+    retention_time = spectrum_dict.get('retentionTime', 0)
 
-    precursor_mz = spectrum_dict['precursorMz'][0]['precursorMz']
-    if 'precursorCharge' in spectrum_dict['precursorMz'][0]:
-        precursor_charge = spectrum_dict['precursorMz'][0]['precursorCharge']
-    else:
-        precursor_charge = None
+    precursor = spectrum_dict.get('precursorMz', [{}])[0]
+    precursor_mz = precursor.get('precursorMz', 0)
+    precursor_charge = precursor.get('precursorCharge', 0)
 
-    spectrum = MsmsSpectrum(str(scan_nr), precursor_mz, precursor_charge,
-                            mz_array, intensity_array, retention_time)
+    return MsmsSpectrum(str(scan_nr), precursor_mz, precursor_charge, mz_array, intensity_array, retention_time)
 
-
-    #print("parsing dict: %s seconds" % (time.time() - start))
-    return spectrum
 
 
 
@@ -535,20 +474,20 @@ def verify_extension(supported_extensions: List[str], filename: str) -> None:
         logging.error('File not found: %s', filename)
         raise FileNotFoundError(f'File {filename} does not exist')
 
-if __name__ == "__main__":
-    if str(sys.argv[1])[-3] == "X":
-        print("mzxml")
-        with cProfile.Profile() as profile:
-            print(mzxml_load(sys.argv[1]))
-        results = pstats.Stats(profile)
-        results.sort_stats(pstats.SortKey.TIME)
-        #results.print_stats()
-    elif str(sys.argv[1])[-3] == "z":
-        print("mzml")
+# if __name__ == "__main__":
+#     if str(sys.argv[1])[-3] == "X":
+#         print("mzxml")
+#         with cProfile.Profile() as profile:
+#             print(mzxml_load(sys.argv[1]))
+#         results = pstats.Stats(profile)
+#         results.sort_stats(pstats.SortKey.TIME)
+#         #results.print_stats()
+#     elif str(sys.argv[1])[-3] == "z":
+#         print("mzml")
         
-        spectra = mzml_load(sys.argv[1])
+#         spectra = mzml_load(sys.argv[1])
 
-        print(spectra)  
+#         print(spectra)  
     # with cProfile.Profile() as profile:
     #     mzml_load(sys.argv[1])
 
@@ -556,4 +495,70 @@ if __name__ == "__main__":
     # results.sort_stats(pstats.SortKey.TIME)
     # results.print_stats()
 
+#  Main script for individual file
+# if __name__ == "__main__":
+#     if len(sys.argv) != 3:
+#         print("Usage: python load_mzml.py <input_file.mzXML> <output_file.mgf>")
+#         sys.exit(1)
+
+#     input_file = sys.argv[1]
+#     output_file = sys.argv[2]
+
+#     if not os.path.isfile(input_file):
+#         logger.error("Input file does not exist: %s", input_file)
+#         sys.exit(1)
+
+#     try:
+#         print("Starting mzXML to MGF conversion.")
+#         convert_mzxml_mgf(input_file, output_file)
+#         print("Conversion complete. Output written to %s", output_file)
+#     except Exception as e:
+#         print("Error during conversion: %s", str(e))
+#         sys.exit(1)
+
+# Main script for folders
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) != 3:
+        print("Usage: python load_mzml.py <input_file_or_folder> <output_file_or_folder>")
+        sys.exit(1)
+
+    input_path = sys.argv[1]
+    output_path = sys.argv[2]
+
+    # Check if the input is a folder or a file
+    if os.path.isdir(input_path):
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
+        mzxml_files = [os.path.join(input_path, f) for f in os.listdir(input_path) if f.endswith(".mzXML")]
+
+        if not mzxml_files:
+            print(f"No mzXML files found in the folder: {input_path}")
+            sys.exit(1)
+
+        for mzxml_file in mzxml_files:
+            output_file = os.path.join(output_path, os.path.basename(mzxml_file).replace(".mzXML", ".mgf"))
+            print(f"Processing file: {mzxml_file}")
+            try:
+                convert_mzxml_mgf(mzxml_file, output_file)
+                print(f"Converted: {mzxml_file} -> {output_file}")
+            except Exception as e:
+                print(f"Error during conversion of {mzxml_file}: {e}")
+
+    elif os.path.isfile(input_path):
+        if not output_path.endswith(".mgf"):
+            print("For single file conversion, output must be an .mgf file.")
+            sys.exit(1)
+
+        try:
+            convert_mzxml_mgf(input_path, output_path)
+            print(f"Converted: {input_path} -> {output_path}")
+        except Exception as e:
+            print(f"Error during conversion: {e}")
+            sys.exit(1)
+
+    else:
+        print(f"Input path does not exist: {input_path}")
+        sys.exit(1)
 
