@@ -553,7 +553,7 @@ def load_process_single(
 ):
     #mgf mzml mzxml
     if no_limitations:
-        min_peaks = 1
+        min_peaks = 0
         min_mz_range = 0.0
         mz_min = None
         mz_max = None
