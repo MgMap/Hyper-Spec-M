@@ -487,48 +487,30 @@ def preprocess_read_spectra_list(
     List
         The processed cluster.
     """
-    invalid_spec_list = []
-    for i in range(len(spectra_list)):
-        spectra_list[i] = _set_mz_range(spectra_list[i], mz_min, mz_max)
-
-        # Check if spectrum is valid
-        if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range):
-            invalid_spec_list.append(i)
-            continue
-
-        if remove_precursor_tolerance is not None:
-            spectra_list[i] = _remove_precursor_peak(spectra_list[i], remove_precursor_tolerance, 'Da', 0)
-            if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range):
-                invalid_spec_list.append(i)
-                continue
-        
-        if min_intensity is not None or max_peaks_used is not None:
-            min_intensity = 0. if min_intensity is None else min_intensity
-            spectra_list[i] = _filter_intensity(spectra_list[i], min_intensity, max_peaks_used)
-            if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range):
-                invalid_spec_list.append(i)
-                continue
-
-        spectra_list[i][7] = _scale_intensity(spectra_list[i][7], scaling, max_rank=max_peaks_used)
-
-        spectra_list[i][7] = _norm_intensity(spectra_list[i][7])
-
-        # Add bucket
-        interval_i = _precursor_to_interval(
-            mz=spectra_list[i][2], charge=spectra_list[i][1], interval_width=mz_interval)
-        spectra_list[i][0] = interval_i
-
-        # Pad precursor mz and intensity to size-max_peaks_used
-        pad_size = max_peaks_used-len(spectra_list[i][6])
-        if pad_size:
-            spectra_list[i][6] = np.pad(spectra_list[i][6], (0, pad_size), 'constant', constant_values=-1)
-            spectra_list[i][7] = np.pad(spectra_list[i][7], (0, pad_size), 'constant', constant_values=-1)
-            
-
-    # Delete invalid spectrum
-    for i in invalid_spec_list:
-        spectra_list[i] = -1
-    spectra_list = [item for item in spectra_list if item!=-1]
+    logger.info(f"Preprocessing {len(spectra_list)} spectra")
+    original_count = len(spectra_list)
+    
+    # Apply min_peaks and min_mz_range filtering
+    spectra_list = [s for s in spectra_list if len(s[6]) >= min_peaks and (max(s[6]) - min(s[6])) >= min_mz_range]
+    after_min_peaks = len(spectra_list)
+    logger.info(f"Removed {original_count - after_min_peaks} spectra due to min_peaks and min_mz_range")
+    
+    # Apply m/z range filtering
+    spectra_list = [s for s in spectra_list if (mz_min is None or min(s[6]) >= mz_min) and (mz_max is None or max(s[6]) <= mz_max)]
+    after_mz_filter = len(spectra_list)
+    logger.info(f"Removed {after_min_peaks - after_mz_filter} spectra due to m/z range filtering")
+    
+    # Apply precursor removal tolerance filtering
+    spectra_list = [s for s in spectra_list if not any(abs(m - s[2]) <= remove_precursor_tolerance for m in s[6])]
+    after_precursor_removal = len(spectra_list)
+    logger.info(f"Removed {after_mz_filter - after_precursor_removal} spectra due to precursor removal tolerance")
+    
+    # Apply intensity filtering
+    spectra_list = [s for s in spectra_list if max(s[7]) >= min_intensity]
+    after_intensity_filter = len(spectra_list)
+    logger.info(f"Removed {after_precursor_removal - after_intensity_filter} spectra due to intensity filtering")
+    
+    logger.info(f"Total spectra after preprocessing: {len(spectra_list)}")
     return spectra_list
 
 
