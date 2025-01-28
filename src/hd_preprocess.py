@@ -552,16 +552,16 @@ def load_process_single(
     no_limitations: bool = False
 ):
     #mgf mzml mzxml
-    if no_limitations:
-        min_peaks = 0
-        min_mz_range = 0.0
-        mz_min = None
-        mz_max = None
-        remove_precursor_tolerance = 0.0
-        min_intensity = 0.0
-        max_peaks_used = 10000  # Arbitrary high number
-        scaling = 'off'
-    spec_list = []
+    # if no_limitations:
+    #     min_peaks = 0
+    #     min_mz_range = 0.0
+    #     mz_min = None
+    #     mz_max = None
+    #     remove_precursor_tolerance = 0.0
+    #     min_intensity = 0.0
+    #     max_peaks_used = 10000  # Arbitrary high number
+    #     scaling = 'off'
+    # spec_list = []
     
     if(file_type == "mgf"):
         spec_list = fast_mgf_parse(file)
@@ -571,7 +571,7 @@ def load_process_single(
     elif file_type == "mzML":
         spec_list = mzml_load(file)
 
-    if if_preprocess:
+    if if_preprocess and no_limitations:
         original_count = len(spec_list)
         spec_list = preprocess_read_spectra_list(
             spectra_list = spec_list,
