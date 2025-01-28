@@ -526,9 +526,7 @@ def preprocess_read_spectra_list(
             
     print(f"Invalid spectra count {len(invalid_spec_list)}")
     # Delete invalid spectrum
-    for i in invalid_spec_list:
-        spectra_list[i] = -1
-    spectra_list = [item for item in spectra_list if item!=-1]
+    
     return spectra_list
 
 
