@@ -548,14 +548,14 @@ def load_process_single(
     min_intensity: Optional[float] = 0.01,
     max_peaks_used: Optional[int] = 50,
     scaling: Optional[str] = 'off',
-    file_type: Optional[str] = 'mgf'
+    file_type: Optional[str] = 'mgf',
 ):
     #mgf mzml mzxml
     spec_list = []
     
     if(file_type == "mgf"):
         spec_list = fast_mgf_parse(file)
-        logger.info(f"Total spectra read from file: {len(spec_list)}")
+        print(f"Total spectra read from file: {len(spec_list)}")
     elif file_type == "mzXML":
         spec_list = mzxml_load(file)
     elif file_type == "mzML":
@@ -571,7 +571,7 @@ def load_process_single(
             min_intensity = min_intensity,
             max_peaks_used = max_peaks_used,
             scaling = scaling)
-    logger.info(f"Total spectra after filtering: {len(spec_list)}")
+    print(f"Total spectra after filtering: {len(spec_list)}")
 
     return spec_list
 
