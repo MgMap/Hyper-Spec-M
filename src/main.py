@@ -75,7 +75,7 @@ def main(args: Union[str, List[str]] = None) -> int:
     
     if (spectra_meta_df is None) or (spectra_hvs is None):
         ###################### 1. Load and parse spectra files
-        spectra_meta_df, spectra_mz, spectra_intensity = hd_preprocess.load_process_spectra_parallel(config=config, logger=logger)
+        spectra_meta_df, spectra_mz, spectra_intensity = hd_preprocess.load_raw_spectra_parallel(config=config, logger=logger)
         logger.info("Loaded %d spectra for clustering", len(spectra_meta_df))
         logger.info("Preserve {} spectra for cluster charges: {}".format(len(spectra_meta_df), config.cluster_charges))
         

@@ -552,16 +552,16 @@ def load_process_single(
     no_limitations: bool = False
 ):
     #mgf mzml mzxml
-    # if no_limitations:
-    #     min_peaks = 0
-    #     min_mz_range = 0.0
-    #     mz_min = None
-    #     mz_max = None
-    #     remove_precursor_tolerance = 0.0
-    #     min_intensity = 0.0
-    #     max_peaks_used = 10000  # Arbitrary high number
-    #     scaling = 'off'
-    # spec_list = []
+    if no_limitations:
+        min_peaks = 0
+        min_mz_range = 0.0
+        mz_min = None
+        mz_max = None
+        remove_precursor_tolerance = 0.0
+        min_intensity = 0.0
+        max_peaks_used = 10000  # Arbitrary high number
+        scaling = 'off'
+    spec_list = []
     
     if(file_type == "mgf"):
         spec_list = fast_mgf_parse(file)
@@ -571,19 +571,19 @@ def load_process_single(
     elif file_type == "mzML":
         spec_list = mzml_load(file)
 
-    # if if_preprocess and no_limitations:
-    #     original_count = len(spec_list)
-    #     spec_list = preprocess_read_spectra_list(
-    #         spectra_list = spec_list,
-    #         min_peaks = min_peaks, min_mz_range = min_mz_range,
-    #         mz_interval = mz_interval,
-    #         mz_min = mz_min, mz_max = mz_max,
-    #         remove_precursor_tolerance = remove_precursor_tolerance,
-    #         min_intensity = min_intensity,
-    #         max_peaks_used = max_peaks_used,
-    #         scaling = scaling)
-    #     after_min_peaks = len(spec_list)
-    #     print(f"Removed {original_count - after_min_peaks} spectra due to min_peaks and min_mz_range")
+    if if_preprocess:
+        original_count = len(spec_list)
+        spec_list = preprocess_read_spectra_list(
+            spectra_list = spec_list,
+            min_peaks = min_peaks, min_mz_range = min_mz_range,
+            mz_interval = mz_interval,
+            mz_min = mz_min, mz_max = mz_max,
+            remove_precursor_tolerance = remove_precursor_tolerance,
+            min_intensity = min_intensity,
+            max_peaks_used = max_peaks_used,
+            scaling = scaling)
+        after_min_peaks = len(spec_list)
+        print(f"Removed {original_count - after_min_peaks} spectra due to min_peaks and min_mz_range")
         
     print(f"Total spectra after filtering: {len(spec_list)}")
     print(spec_list)
