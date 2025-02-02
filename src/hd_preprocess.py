@@ -627,6 +627,14 @@ def load_process_spectra_parallel(
     spectra_intensity = np.array([np.pad(j[7], (0, max_length - len(j[7])), 'constant', constant_values=0)
                               for i in read_spectra_list for j in i], dtype=np.float32)
 
+     # Sanitize data to remove NaN, Inf values
+    spectra_mz = np.nan_to_num(spectra_mz, nan=0.0, posinf=0.0, neginf=0.0)
+    spectra_intensity = np.nan_to_num(spectra_intensity, nan=0.0, posinf=0.0, neginf=0.0)
+
+    # Debug shapes
+    print(f"Spectra MZ Shape: {spectra_mz.shape}")
+    print(f"Spectra Intensity Shape: {spectra_intensity.shape}")
+    
     read_spectra_list = [j[:6] for i in read_spectra_list for j in i]
     spectra_meta_df = pd.DataFrame(read_spectra_list,\
         columns=['bucket', 'precursor_charge', 'precursor_mz', 'identifier',
