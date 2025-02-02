@@ -557,9 +557,9 @@ def load_process_single(
         min_mz_range = 0.0
         mz_min = None
         mz_max = None
-        remove_precursor_tolerance = None
+        remove_precursor_tolerance = 0.0
         min_intensity = 0.00001
-        max_peaks_used = None  # Arbitrary high number
+        max_peaks_used = 100000  # Arbitrary high number
         scaling = 'off'
     spec_list = []
     
