@@ -684,9 +684,8 @@ def load_raw_spectra_parallel(
         'scan', 'retention_time', 'mz', 'intensity'])
     
      # Extract mz and intensity columns
-    spectra_mz = read_spectra_list['mz'].values
-    spectra_intensity = read_spectra_list['intensity'].values
-
+    spectra_mz = np.vstack(read_spectra_list['mz'].values)
+    spectra_intensity = np.vstack(read_spectra_list['intensity'].values)
     # Add exception for scan missing
     for c in read_spectra_list.columns:
         if c in ['precursor_charge']:
