@@ -492,9 +492,9 @@ def preprocess_read_spectra_list(
         spectra_list[i] = _set_mz_range(spectra_list[i], mz_min, mz_max)
 
         #Check if spectrum is valid
-        if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range):
-            invalid_spec_list.append(i)
-            continue
+        # if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range):
+        #     invalid_spec_list.append(i)
+        #     continue
 
         if remove_precursor_tolerance is not None:
             spectra_list[i] = _remove_precursor_peak(spectra_list[i], remove_precursor_tolerance, 'Da', 0)
