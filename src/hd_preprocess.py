@@ -492,9 +492,9 @@ def preprocess_read_spectra_list(
         spectra_list[i] = _set_mz_range(spectra_list[i], mz_min, mz_max)
 
         # Check if spectrum is valid
-        if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range):
-            invalid_spec_list.append(i)
-            continue
+        # if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range):
+        #     invalid_spec_list.append(i)
+        #     continue
 
         if remove_precursor_tolerance is not None:
             spectra_list[i] = _remove_precursor_peak(spectra_list[i], remove_precursor_tolerance, 'Da', 0)
@@ -557,9 +557,9 @@ def load_process_single(
         min_mz_range = 0.0
         mz_min = None
         mz_max = None
-        remove_precursor_tolerance = 0.0
-        min_intensity = 0.0
-        max_peaks_used = 10000  # Arbitrary high number
+        remove_precursor_tolerance = None
+        min_intensity = 0.00001
+        max_peaks_used = None  # Arbitrary high number
         scaling = 'off'
     spec_list = []
     
@@ -666,7 +666,6 @@ def load_process_spectra_parallel(
         spectra_meta_df=spectra_meta_df, spectra_mz=spectra_mz, spectra_intensity=spectra_intensity)
 
 
-    print(f"Metadata Shape: {spectra_meta_df.shape}")
     
     parse_time = time.time() - start
     logger.info("Load and process {} spectra in {:.4f}s".format(len(spectra_meta_df), parse_time))
