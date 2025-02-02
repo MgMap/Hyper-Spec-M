@@ -683,6 +683,10 @@ def load_raw_spectra_parallel(
         columns=['bucket', 'precursor_charge', 'precursor_mz', 'identifier',
         'scan', 'retention_time', 'mz', 'intensity'])
     
+     # Extract mz and intensity columns
+    spectra_mz = read_spectra_list['mz'].values
+    spectra_intensity = read_spectra_list['intensity'].values
+
     # Add exception for scan missing
     for c in read_spectra_list.columns:
         if c in ['precursor_charge']:
@@ -698,6 +702,6 @@ def load_raw_spectra_parallel(
             read_spectra_list[c] = read_spectra_list[c].astype(np.float32)
 
     read_spectra_list = read_spectra_list.sort_values(by=['precursor_charge', 'bucket'], ascending=True)
-    return read_spectra_list.reset_index(drop=True)
+    return read_spectra_list.reset_index(drop=True), spectra_mz, spectra_intensity
 
 
