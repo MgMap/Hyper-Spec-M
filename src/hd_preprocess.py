@@ -621,11 +621,11 @@ def load_process_spectra_parallel(
     max_length = max(len(j[6]) for i in read_spectra_list for j in i)
 
     # Pad shorter arrays with -1 to match the maximum length
-    spectra_mz = np.array([np.pad(j[6], (0, max_length - len(j[6])), 'constant', constant_values=-1)
-                            for i in read_spectra_list for j in i], dtype=np.float32)
+    spectra_mz = np.array([np.pad(j[6], (0, max_length - len(j[6])), 'constant', constant_values=0)
+                        for i in read_spectra_list for j in i], dtype=np.float32)
 
-    spectra_intensity = np.array([np.pad(j[7], (0, max_length - len(j[7])), 'constant', constant_values=-1)
-                                  for i in read_spectra_list for j in i], dtype=np.float32)
+    spectra_intensity = np.array([np.pad(j[7], (0, max_length - len(j[7])), 'constant', constant_values=0)
+                              for i in read_spectra_list for j in i], dtype=np.float32)
 
     read_spectra_list = [j[:6] for i in read_spectra_list for j in i]
     spectra_meta_df = pd.DataFrame(read_spectra_list,\
