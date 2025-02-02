@@ -539,7 +539,7 @@ def fast_mgf_parse(filename):
 
 def load_process_single(
     file: str,
-    if_preprocess: bool = True,
+    if_preprocess: bool = False,
     min_peaks: int = 5, min_mz_range: float = 250.0,
     mz_interval: int = 1,
     mz_min: Optional[float] = 101.0,
