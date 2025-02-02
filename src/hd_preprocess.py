@@ -553,13 +553,13 @@ def load_process_single(
 ):
     #mgf mzml mzxml
     if no_limitations:
-        min_peaks = None
-        min_mz_range = None
+        min_peaks = 0
+        min_mz_range = 0.0
         mz_min = None
         mz_max = None
-        remove_precursor_tolerance = None
-        min_intensity = None
-        max_peaks_used = None # Arbitrary high number
+        remove_precursor_tolerance = 0.0
+        min_intensity = 0.0
+        max_peaks_used = 10000  # Arbitrary high number
         scaling = 'off'
     spec_list = []
     
@@ -586,6 +586,7 @@ def load_process_single(
         print(f"Removed {original_count - after_min_peaks} spectra due to min_peaks and min_mz_range")
         
     print(f"Total spectra after filtering: {len(spec_list)}")
+
     return spec_list
 
 
@@ -616,8 +617,15 @@ def load_process_spectra_parallel(
                 no_limitations = config.no_limitations)
             for f_i in tqdm.tqdm(input_files))
 
-    spectra_mz = np.array([j[6] for i in read_spectra_list for j in i], dtype=np.float32)
-    spectra_intensity = np.array([j[7] for i in read_spectra_list for j in i], dtype=np.float32)
+    # Find the maximum length of m/z and intensity arrays
+    max_length = max(len(j[6]) for i in read_spectra_list for j in i)
+
+    # Pad shorter arrays with -1 to match the maximum length
+    spectra_mz = np.array([np.pad(j[6], (0, max_length - len(j[6])), 'constant', constant_values=-1)
+                            for i in read_spectra_list for j in i], dtype=np.float32)
+
+    spectra_intensity = np.array([np.pad(j[7], (0, max_length - len(j[7])), 'constant', constant_values=-1)
+                                  for i in read_spectra_list for j in i], dtype=np.float32)
 
     read_spectra_list = [j[:6] for i in read_spectra_list for j in i]
     spectra_meta_df = pd.DataFrame(read_spectra_list,\
@@ -682,6 +690,7 @@ def load_raw_spectra_parallel(
         columns=['bucket', 'precursor_charge', 'precursor_mz', 'identifier',
         'scan', 'retention_time', 'mz', 'intensity'])
     
+   
     # Add exception for scan missing
     for c in read_spectra_list.columns:
         if c in ['precursor_charge']:
