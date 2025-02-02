@@ -586,7 +586,6 @@ def load_process_single(
         print(f"Removed {original_count - after_min_peaks} spectra due to min_peaks and min_mz_range")
         
     print(f"Total spectra after filtering: {len(spec_list)}")
-# print(spec_list)
     return spec_list
 
 
@@ -683,9 +682,6 @@ def load_raw_spectra_parallel(
         columns=['bucket', 'precursor_charge', 'precursor_mz', 'identifier',
         'scan', 'retention_time', 'mz', 'intensity'])
     
-     # Extract mz and intensity columns
-    spectra_mz = np.vstack(read_spectra_list['mz'].values)
-    spectra_intensity = np.vstack(read_spectra_list['intensity'].values)
     # Add exception for scan missing
     for c in read_spectra_list.columns:
         if c in ['precursor_charge']:
@@ -701,6 +697,6 @@ def load_raw_spectra_parallel(
             read_spectra_list[c] = read_spectra_list[c].astype(np.float32)
 
     read_spectra_list = read_spectra_list.sort_values(by=['precursor_charge', 'bucket'], ascending=True)
-    return read_spectra_list.reset_index(drop=True), spectra_mz, spectra_intensity
+    return read_spectra_list.reset_index(drop=True)
 
 
