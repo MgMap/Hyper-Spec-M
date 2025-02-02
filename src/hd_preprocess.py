@@ -491,10 +491,10 @@ def preprocess_read_spectra_list(
     for i in range(len(spectra_list)):
         spectra_list[i] = _set_mz_range(spectra_list[i], mz_min, mz_max)
 
-        # Check if spectrum is valid
-        # if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range):
-        #     invalid_spec_list.append(i)
-        #     continue
+        #Check if spectrum is valid
+        if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range):
+            invalid_spec_list.append(i)
+            continue
 
         if remove_precursor_tolerance is not None:
             spectra_list[i] = _remove_precursor_peak(spectra_list[i], remove_precursor_tolerance, 'Da', 0)
@@ -539,7 +539,7 @@ def fast_mgf_parse(filename):
 
 def load_process_single(
     file: str,
-    if_preprocess: bool = False,
+    if_preprocess: bool = True,
     min_peaks: int = 5, min_mz_range: float = 250.0,
     mz_interval: int = 1,
     mz_min: Optional[float] = 101.0,
@@ -617,16 +617,8 @@ def load_process_spectra_parallel(
                 no_limitations = config.no_limitations)
             for f_i in tqdm.tqdm(input_files))
 
-    # Find the maximum length of m/z and intensity arrays
-    max_length = max(len(j[6]) for i in read_spectra_list for j in i)
-
-    # Pad shorter arrays with -1 to match the maximum length
-    spectra_mz = np.array([np.pad(j[6], (0, max_length - len(j[6])), 'constant', constant_values=0)
-                        for i in read_spectra_list for j in i], dtype=np.float32)
-
-    spectra_intensity = np.array([np.pad(j[7], (0, max_length - len(j[7])), 'constant', constant_values=0)
-                              for i in read_spectra_list for j in i], dtype=np.float32)
-
+    spectra_mz = np.array([j[6] for i in read_spectra_list for j in i], dtype=np.float32)
+    spectra_intensity = np.array([j[7] for i in read_spectra_list for j in i], dtype=np.float32)
      # Sanitize data to remove NaN, Inf values
     spectra_mz = np.nan_to_num(spectra_mz, nan=0.0, posinf=0.0, neginf=0.0)
     spectra_intensity = np.nan_to_num(spectra_intensity, nan=0.0, posinf=0.0, neginf=0.0)
