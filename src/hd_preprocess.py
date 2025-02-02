@@ -491,10 +491,10 @@ def preprocess_read_spectra_list(
     for i in range(len(spectra_list)):
         spectra_list[i] = _set_mz_range(spectra_list[i], mz_min, mz_max)
 
-        #Check if spectrum is valid
-        # if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range):
-        #     invalid_spec_list.append(i)
-        #     continue
+        # Check if spectrum is valid
+        if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range):
+            invalid_spec_list.append(i)
+            continue
 
         if remove_precursor_tolerance is not None:
             spectra_list[i] = _remove_precursor_peak(spectra_list[i], remove_precursor_tolerance, 'Da', 0)
@@ -526,9 +526,9 @@ def preprocess_read_spectra_list(
             
     print(f"Invalid spectra count {len(invalid_spec_list)}")
     # Delete invalid spectrum
-    for i in invalid_spec_list:
-        spectra_list[i] = -1
-    spectra_list = [item for item in spectra_list if item!=-1]
+    # for i in invalid_spec_list:
+    #     spectra_list[i] = -1
+    # spectra_list = [item for item in spectra_list if item!=-1]
     return spectra_list
 
 
@@ -572,7 +572,6 @@ def load_process_single(
         spec_list = mzml_load(file)
 
     if if_preprocess:
-        original_count = len(spec_list)
         spec_list = preprocess_read_spectra_list(
             spectra_list = spec_list,
             min_peaks = min_peaks, min_mz_range = min_mz_range,
@@ -582,8 +581,6 @@ def load_process_single(
             min_intensity = min_intensity,
             max_peaks_used = max_peaks_used,
             scaling = scaling)
-        after_min_peaks = len(spec_list)
-        print(f"Removed {original_count - after_min_peaks} spectra due to min_peaks and min_mz_range")
         
     print(f"Total spectra after filtering: {len(spec_list)}")
 
