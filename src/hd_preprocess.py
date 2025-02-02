@@ -539,7 +539,7 @@ def fast_mgf_parse(filename):
 
 def load_process_single(
     file: str,
-    if_preprocess: bool = False,
+    if_preprocess: bool = True,
     min_peaks: int = 5, min_mz_range: float = 250.0,
     mz_interval: int = 1,
     mz_min: Optional[float] = 101.0,
@@ -553,13 +553,13 @@ def load_process_single(
 ):
     #mgf mzml mzxml
     if no_limitations:
-        min_peaks = 0
-        min_mz_range = 0.0
+        min_peaks = None
+        min_mz_range = None
         mz_min = None
         mz_max = None
-        remove_precursor_tolerance = 0.0
-        min_intensity = 0.0
-        max_peaks_used = 10000  # Arbitrary high number
+        remove_precursor_tolerance = None
+        min_intensity = None
+        max_peaks_used = None # Arbitrary high number
         scaling = 'off'
     spec_list = []
     
