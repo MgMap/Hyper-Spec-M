@@ -634,7 +634,7 @@ def load_process_spectra_parallel(
     # Debug shapes
     print(f"Spectra MZ Shape: {spectra_mz.shape}")
     print(f"Spectra Intensity Shape: {spectra_intensity.shape}")
-    
+
     read_spectra_list = [j[:6] for i in read_spectra_list for j in i]
     spectra_meta_df = pd.DataFrame(read_spectra_list,\
         columns=['bucket', 'precursor_charge', 'precursor_mz', 'identifier',
@@ -665,6 +665,9 @@ def load_process_spectra_parallel(
     spectra_meta_df, spectra_mz, spectra_intensity = sort_spectra_meta_data(
         spectra_meta_df=spectra_meta_df, spectra_mz=spectra_mz, spectra_intensity=spectra_intensity)
 
+
+    print(f"Metadata Shape: {spectra_meta_df.shape}")
+    
     parse_time = time.time() - start
     logger.info("Load and process {} spectra in {:.4f}s".format(len(spectra_meta_df), parse_time))
     return spectra_meta_df, spectra_mz, spectra_intensity
