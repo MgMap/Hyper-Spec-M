@@ -614,8 +614,8 @@ def load_process_spectra_parallel(
                 no_limitations = config.no_limitations)
             for f_i in tqdm.tqdm(input_files))
 
-    spectra_mz = np.array([j[6] for i in read_spectra_list for j in i], dtype=np.float32)
-    spectra_intensity = np.array([j[7] for i in read_spectra_list for j in i], dtype=np.float32)
+    # spectra_mz = np.array([j[6] for i in read_spectra_list for j in i], dtype=np.float32)
+    # spectra_intensity = np.array([j[7] for i in read_spectra_list for j in i], dtype=np.float32)
     #  # Sanitize data to remove NaN, Inf values
     # spectra_mz = np.nan_to_num(spectra_mz, nan=0.0, posinf=0.0, neginf=0.0)
     # spectra_intensity = np.nan_to_num(spectra_intensity, nan=0.0, posinf=0.0, neginf=0.0)
