@@ -621,8 +621,8 @@ def load_process_spectra_parallel(
     # spectra_intensity = np.nan_to_num(spectra_intensity, nan=0.0, posinf=0.0, neginf=0.0)
 
     # Debug shapes
-    print(f"Spectra MZ Shape: {spectra_mz.shape}")
-    print(f"Spectra Intensity Shape: {spectra_intensity.shape}")
+    # print(f"Spectra MZ Shape: {spectra_mz.shape}")
+    # print(f"Spectra Intensity Shape: {spectra_intensity.shape}")
 
     # Find the maximum length of m/z and intensity arrays
     max_length = max((len(j[6]) for i in read_spectra_list for j in i), default=1)
