@@ -496,6 +496,17 @@ def preprocess_read_spectra_list(
         spectra_list[i] = _set_mz_range(spectra_list[i], mz_min, mz_max)
 
         # Check if spectrum is valid
+        spectra_list[i][6] = np.sort(spectra_list[i][6])
+        # Calculate m/z range
+        if len(spectra_list[i][6]) > 1:
+            mz_range = spectra_list[i][6][-1] - spectra_list[i][6][0]
+        else:
+            mz_range = 0
+
+        # Debugging unexpected behavior
+        if mz_range < 0:
+            print(f"WARNING: Negative m/z range detected: {mz_range}, Spectrum ID: {spectra_list[i][3]}")
+
         if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range):
             invalid_spec_list.append(i)
             count_mz_range_filter += 1
@@ -566,7 +577,7 @@ def load_process_single(
     #mgf mzml mzxml
     if no_limitations:
         min_peaks = 0
-        min_mz_range = -1000
+        min_mz_range = 0.0 #umm this is not making sense at all
         mz_min = None
         mz_max = None
         remove_precursor_tolerance = 0.0
