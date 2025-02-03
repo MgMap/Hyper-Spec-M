@@ -488,29 +488,37 @@ def preprocess_read_spectra_list(
         The processed cluster.
     """
     invalid_spec_list = []
+    count_mz_range_filter = 0
+    count_precursor_filter = 0
+    count_intensity_filter = 0
+
     for i in range(len(spectra_list)):
         spectra_list[i] = _set_mz_range(spectra_list[i], mz_min, mz_max)
 
         # Check if spectrum is valid
         if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range):
             invalid_spec_list.append(i)
+            count_mz_range_filter += 1
             continue
 
         if remove_precursor_tolerance is not None:
             spectra_list[i] = _remove_precursor_peak(spectra_list[i], remove_precursor_tolerance, 'Da', 0)
             if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range):
                 invalid_spec_list.append(i)
+                count_precursor_filter += 1
                 continue
-        
+
         if min_intensity is not None or max_peaks_used is not None:
             min_intensity = 0. if min_intensity is None else min_intensity
             spectra_list[i] = _filter_intensity(spectra_list[i], min_intensity, max_peaks_used)
             if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range):
                 invalid_spec_list.append(i)
+                count_intensity_filter += 1
                 continue
 
-        spectra_list[i][7] = _scale_intensity(spectra_list[i][7], scaling, max_rank=max_peaks_used)
+   
 
+        spectra_list[i][7] = _scale_intensity(spectra_list[i][7], scaling, max_rank=max_peaks_used)
         spectra_list[i][7] = _norm_intensity(spectra_list[i][7])
 
         # Add bucket
@@ -523,6 +531,10 @@ def preprocess_read_spectra_list(
         if pad_size:
             spectra_list[i][6] = np.pad(spectra_list[i][6], (0, pad_size), 'constant', constant_values=0)
             spectra_list[i][7] = np.pad(spectra_list[i][7], (0, pad_size), 'constant', constant_values=0)
+
+    print(f"Filtered by m/z range: {count_mz_range_filter}")
+    print(f"Filtered by precursor removal: {count_precursor_filter}")
+    print(f"Filtered by intensity: {count_intensity_filter}")
             
     print(f"Invalid spectra count {len(invalid_spec_list)}")
     # Delete invalid spectrum
