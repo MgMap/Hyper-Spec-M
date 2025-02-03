@@ -521,8 +521,8 @@ def preprocess_read_spectra_list(
         # Pad precursor mz and intensity to size-max_peaks_used
         pad_size = max_peaks_used-len(spectra_list[i][6])
         if pad_size:
-            spectra_list[i][6] = np.pad(spectra_list[i][6], (0, pad_size), 'constant', constant_values=-1)
-            spectra_list[i][7] = np.pad(spectra_list[i][7], (0, pad_size), 'constant', constant_values=-1)
+            spectra_list[i][6] = np.pad(spectra_list[i][6], (0, pad_size), 'constant', constant_values=0)
+            spectra_list[i][7] = np.pad(spectra_list[i][7], (0, pad_size), 'constant', constant_values=0)
             
     print(f"Invalid spectra count {len(invalid_spec_list)}")
     # Delete invalid spectrum

@@ -455,17 +455,14 @@ def encode_func(
     lv_hvs, id_hvs = cp.array(data_dict['lv_hvs']), cp.array(data_dict['id_hvs'])
 
     batch_size = slice_idx[1] - slice_idx[0]
-        # Debug print for data shape and issues
-    print(f"Intensity shape: {intensity.shape if hasattr(intensity, 'shape') else 'Not defined'}")
-    print(f"MZ shape: {mz.shape if hasattr(mz, 'shape') else 'Not defined'}")
 
-    # Check for NaN, Inf, and negative values
-    print(f"NaN in MZ: {np.isnan(mz).any()}, Inf in MZ: {np.isinf(mz).any()}")
-    print(f"NaN in Intensity: {np.isnan(intensity).any()}, Inf in Intensity: {np.isinf(intensity).any()}")
+        # Clip negative values to zero
+    mz = np.clip(mz, a_min=0, a_max=None)
+    intensity = np.clip(intensity, a_min=0, a_max=None)
 
-    # Ensure there are no negative values (if that's an issue)
-    print(f"Negative MZ: {(mz < 0).any() if hasattr(mz, '__len__') else 'Not applicable'}")
-    print(f"Negative Intensity: {(intensity < 0).any() if hasattr(intensity, '__len__') else 'Not applicable'}")
+    # Verify after clipping
+    print(f"Negative MZ after clipping: {(mz < 0).any()}")
+    print(f"Negative Intensity after clipping: {(intensity < 0).any()}")
     return hd_encode_spectra_packed(intensity, mz, id_hvs, lv_hvs, batch_size, D, Q, output_type)
 
 
