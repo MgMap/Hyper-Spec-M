@@ -640,6 +640,8 @@ def load_process_spectra_parallel(
     for i in read_spectra_list for j in i
     ], dtype=np.float32)
 
+    
+
     read_spectra_list = [j[:6] for i in read_spectra_list for j in i]
     spectra_meta_df = pd.DataFrame(read_spectra_list,\
         columns=['bucket', 'precursor_charge', 'precursor_mz', 'identifier',
@@ -669,7 +671,6 @@ def load_process_spectra_parallel(
         
     spectra_meta_df, spectra_mz, spectra_intensity = sort_spectra_meta_data(
         spectra_meta_df=spectra_meta_df, spectra_mz=spectra_mz, spectra_intensity=spectra_intensity)
-
 
     
     parse_time = time.time() - start
