@@ -571,6 +571,9 @@ def load_process_single(
     elif file_type == "mzML":
         spec_list = mzml_load(file)
 
+    negative_mz_count = sum(np.any(spectrum[6] < 0) for spectrum in spec_list)
+    print(f"Number of spectra with negative m/z values: {negative_mz_count}")
+    
     if if_preprocess:
         spec_list = preprocess_read_spectra_list(
             spectra_list = spec_list,
