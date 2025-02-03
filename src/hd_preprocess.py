@@ -553,8 +553,8 @@ def load_process_single(
 ):
     #mgf mzml mzxml
     if no_limitations:
-        min_peaks = 0
-        min_mz_range = 0.0
+        min_peaks = 1
+        min_mz_range = 0.01
         mz_min = None
         mz_max = None
         remove_precursor_tolerance = 0.0
@@ -571,7 +571,7 @@ def load_process_single(
     elif file_type == "mzML":
         spec_list = mzml_load(file)
 
-    if if_preprocess and not no_limitations:
+    if if_preprocess:
         spec_list = preprocess_read_spectra_list(
             spectra_list = spec_list,
             min_peaks = min_peaks, min_mz_range = min_mz_range,
@@ -637,7 +637,7 @@ def load_process_spectra_parallel(
             spectra_meta_df[c] = spectra_meta_df[c].astype(np.float32)
 
     # Filter invalid charge
-    if len(config.cluster_charges) and not config.no_limitations:
+    if len(config.cluster_charges):
         valid_charge_idx = spectra_meta_df['precursor_charge'].isin(config.cluster_charges)
         spectra_mz, spectra_intensity = spectra_mz[valid_charge_idx, :], spectra_intensity[valid_charge_idx, :]
         spectra_meta_df = spectra_meta_df.loc[valid_charge_idx] # .drop(spectra_meta_df.loc[~valid_charge_idx].index, inplace=True)
