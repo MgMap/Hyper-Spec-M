@@ -457,12 +457,6 @@ def encode_func(
     batch_size = slice_idx[1] - slice_idx[0]
 
         # Clip negative values to zero
-    mz = np.clip(mz, a_min=0, a_max=None)
-    intensity = np.clip(intensity, a_min=0, a_max=None)
-
-    # Verify after clipping
-    print(f"Negative MZ after clipping: {(mz < 0).any()}")
-    print(f"Negative Intensity after clipping: {(intensity < 0).any()}")
     return hd_encode_spectra_packed(intensity, mz, id_hvs, lv_hvs, batch_size, D, Q, output_type)
 
 

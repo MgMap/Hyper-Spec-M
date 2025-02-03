@@ -616,15 +616,7 @@ def load_process_spectra_parallel(
 
     # spectra_mz = np.array([j[6] for i in read_spectra_list for j in i], dtype=np.float32)
     # spectra_intensity = np.array([j[7] for i in read_spectra_list for j in i], dtype=np.float32)
-    #  # Sanitize data to remove NaN, Inf values
-    # spectra_mz = np.nan_to_num(spectra_mz, nan=0.0, posinf=0.0, neginf=0.0)
-    # spectra_intensity = np.nan_to_num(spectra_intensity, nan=0.0, posinf=0.0, neginf=0.0)
 
-    # Debug shapes
-    # print(f"Spectra MZ Shape: {spectra_mz.shape}")
-    # print(f"Spectra Intensity Shape: {spectra_intensity.shape}")
-
-    # Find the maximum length of m/z and intensity arrays
     max_length = max((len(j[6]) for i in read_spectra_list for j in i), default=1)
 
     # Pad inconsistent spectra with zeros
@@ -640,12 +632,17 @@ def load_process_spectra_parallel(
     for i in read_spectra_list for j in i
     ], dtype=np.float32)
 
-    
+    spectra_mz = np.nan_to_num(spectra_mz, nan=0.0, posinf=0.0, neginf=0.0)
+    spectra_intensity = np.nan_to_num(spectra_intensity, nan=0.0, posinf=0.0, neginf=0.0)
+
+    # Ensure no negative values
+    spectra_mz = np.clip(spectra_mz, a_min=0, a_max=None)
+    spectra_intensity = np.clip(spectra_intensity, a_min=0, a_max=None)
 
     read_spectra_list = [j[:6] for i in read_spectra_list for j in i]
-    spectra_meta_df = pd.DataFrame(read_spectra_list,\
-        columns=['bucket', 'precursor_charge', 'precursor_mz', 'identifier',
-        'scan', 'retention_time'])
+    spectra_meta_df = pd.DataFrame([j[:6] for j in read_spectra_list],
+    columns=['bucket', 'precursor_charge', 'precursor_mz', 'identifier', 'scan', 'retention_time']
+)
  
     # TODO: Add exception for scan missing
     for c in spectra_meta_df.columns:
