@@ -260,7 +260,7 @@ def _check_spectrum_valid(
         range, False otherwise.
     """
     return (len(spectrum_mz) >= min_peaks and
-            spectrum_mz[-1] - spectrum_mz[0] >= min_mz_range)
+            spectrum_mz[-1] - spectrum_mz[0] >= min_mz_range) #here it is the cultprit
 
 
 
@@ -494,20 +494,22 @@ def preprocess_read_spectra_list(
 
     for i in range(len(spectra_list)):
         spectra_list[i] = _set_mz_range(spectra_list[i], mz_min, mz_max)
-
-        # Check if spectrum is valid
-        spectra_list[i][6] = np.sort(spectra_list[i][6])
-        # Calculate m/z range
+        
+#---------------------------------------------------------------------------------------------------------------------
+        # check if spectrum is valid
+        spectra_list[i][6] = np.sort(spectra_list[i][6]) #_check_spectrun_valid was assuming spectra_list mz is sorted. making "spectrum_mz[-1] - spectrum_mz[0] >= min_mz_range" wrong
+                                                        # found an important bug after 4 hours i feel good now
+        # calculate again please
         if len(spectra_list[i][6]) > 1:
             mz_range = spectra_list[i][6][-1] - spectra_list[i][6][0]
         else:
             mz_range = 0
 
-        # Debugging unexpected behavior
+        # debug this shit
         if mz_range < 0:
             print(f"WARNING: Negative m/z range detected: {mz_range}, Spectrum ID: {spectra_list[i][3]}")
-
-        if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range):
+#------------------------------------------------------------------------------------------------------------------------
+        if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range): #please go to line 243 or 263 i dont remember
             invalid_spec_list.append(i)
             count_mz_range_filter += 1
             continue
@@ -577,7 +579,9 @@ def load_process_single(
     #mgf mzml mzxml
     if no_limitations:
         min_peaks = 0
-        min_mz_range = 0.0 #umm this is not making sense at all
+        min_mz_range = 0.0 # -1000 umm this is not making sense at all 
+        #when i tried with negative values of min_mz_range and the loaded spectra starting increasing 
+        #that's when i know the filtering function was not calculating right please go to line 497
         mz_min = None
         mz_max = None
         remove_precursor_tolerance = 0.0
