@@ -526,9 +526,9 @@ def preprocess_read_spectra_list(
             
     print(f"Invalid spectra count {len(invalid_spec_list)}")
     # Delete invalid spectrum
-    # for i in invalid_spec_list:
-    #     spectra_list[i] = -1
-    # spectra_list = [item for item in spectra_list if item!=-1]
+    for i in invalid_spec_list:
+        spectra_list[i] = -1
+    spectra_list = [item for item in spectra_list if item!=-1]
     return spectra_list
 
 
@@ -571,7 +571,7 @@ def load_process_single(
     elif file_type == "mzML":
         spec_list = mzml_load(file)
 
-    if if_preprocess:
+    if if_preprocess and not no_limitations:
         spec_list = preprocess_read_spectra_list(
             spectra_list = spec_list,
             min_peaks = min_peaks, min_mz_range = min_mz_range,
@@ -614,35 +614,13 @@ def load_process_spectra_parallel(
                 no_limitations = config.no_limitations)
             for f_i in tqdm.tqdm(input_files))
 
-    # spectra_mz = np.array([j[6] for i in read_spectra_list for j in i], dtype=np.float32)
-    # spectra_intensity = np.array([j[7] for i in read_spectra_list for j in i], dtype=np.float32)
-
-    max_length = max((len(j[6]) for i in read_spectra_list for j in i), default=1)
-
-    # Pad inconsistent spectra with zeros
-    spectra_mz = np.array([
-    np.pad(j[6], (0, max_length - len(j[6])), 'constant', constant_values=0)
-    if len(j[6]) > 0 else np.zeros(max_length)
-    for i in read_spectra_list for j in i
-    ], dtype=np.float32)
-
-    spectra_intensity = np.array([
-    np.pad(j[7], (0, max_length - len(j[7])), 'constant', constant_values=0)
-    if len(j[7]) > 0 else np.zeros(max_length)
-    for i in read_spectra_list for j in i
-    ], dtype=np.float32)
-
-    spectra_mz = np.nan_to_num(spectra_mz, nan=0.0, posinf=0.0, neginf=0.0)
-    spectra_intensity = np.nan_to_num(spectra_intensity, nan=0.0, posinf=0.0, neginf=0.0)
-
-    # Ensure no negative values
-    spectra_mz = np.clip(spectra_mz, a_min=0, a_max=None)
-    spectra_intensity = np.clip(spectra_intensity, a_min=0, a_max=None)
+    spectra_mz = np.array([j[6] for i in read_spectra_list for j in i], dtype=np.float32)
+    spectra_intensity = np.array([j[7] for i in read_spectra_list for j in i], dtype=np.float32)
 
     read_spectra_list = [j[:6] for i in read_spectra_list for j in i]
-    spectra_meta_df = pd.DataFrame([j[:6] for j in read_spectra_list],
-    columns=['bucket', 'precursor_charge', 'precursor_mz', 'identifier', 'scan', 'retention_time']
-)
+    spectra_meta_df = pd.DataFrame(read_spectra_list,\
+        columns=['bucket', 'precursor_charge', 'precursor_mz', 'identifier',
+        'scan', 'retention_time'])
  
     # TODO: Add exception for scan missing
     for c in spectra_meta_df.columns:
@@ -659,7 +637,7 @@ def load_process_spectra_parallel(
             spectra_meta_df[c] = spectra_meta_df[c].astype(np.float32)
 
     # Filter invalid charge
-    if len(config.cluster_charges):
+    if len(config.cluster_charges) and not config.no_limitations:
         valid_charge_idx = spectra_meta_df['precursor_charge'].isin(config.cluster_charges)
         spectra_mz, spectra_intensity = spectra_mz[valid_charge_idx, :], spectra_intensity[valid_charge_idx, :]
         spectra_meta_df = spectra_meta_df.loc[valid_charge_idx] # .drop(spectra_meta_df.loc[~valid_charge_idx].index, inplace=True)
