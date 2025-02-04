@@ -507,7 +507,7 @@ def preprocess_read_spectra_list(
 
         # debug this shit
         if mz_range < 0:
-            print(f"WARNING: Negative m/z range detected: {mz_range}, Spectrum ID: {spectra_list[i][3]}")
+            print(f"WARNING: Negative m/z range detected: {mz_range}")
 #------------------------------------------------------------------------------------------------------------------------
         if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range): #please go to line 243 or 263 i dont remember
             invalid_spec_list.append(i)
@@ -574,10 +574,10 @@ def load_process_single(
     max_peaks_used: Optional[int] = 50,
     scaling: Optional[str] = 'off',
     file_type: Optional[str] = 'mgf',
-    no_limitations: bool = False
+    no_preprocess_filter: bool = False
 ):
     #mgf mzml mzxml
-    if no_limitations:
+    if no_preprocess_filter:
         min_peaks = 0
         min_mz_range = 0.0 # -1000 umm this is not making sense at all 
         #when i tried with negative values of min_mz_range and the loaded spectra starting increasing 
@@ -641,7 +641,7 @@ def load_process_spectra_parallel(
                 max_peaks_used = config.max_peaks_used,
                 scaling = config.scaling,
                 file_type = config.file_type,
-                no_limitations = config.no_limitations)
+                no_preprocess_filter = config.no_preprocess_filter)
             for f_i in tqdm.tqdm(input_files))
 
     spectra_mz = np.array([j[6] for i in read_spectra_list for j in i], dtype=np.float32)

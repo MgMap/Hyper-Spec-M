@@ -121,7 +121,7 @@ class Config:
                  'intense peaks (default: %(default)s).')
         # Add the new argument to the configuration parser
         self._parser.add_argument(
-            '--no_limitations', action='store_true',
+            '--no_preprocess_filter', action='store_true',
             help='Remove all filtering constraints to load all spectra.')
         
         # CLUSTERING
