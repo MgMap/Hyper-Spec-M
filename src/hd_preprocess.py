@@ -491,7 +491,7 @@ def preprocess_read_spectra_list(
     count_mz_range_filter = 0
     count_precursor_filter = 0
     count_intensity_filter = 0
-
+    count_negative = 0
     for i in range(len(spectra_list)):
         spectra_list[i] = _set_mz_range(spectra_list[i], mz_min, mz_max)
         
@@ -507,7 +507,8 @@ def preprocess_read_spectra_list(
 
         # debug this shit
         if mz_range < 0:
-            print(f"WARNING: Negative m/z range detected: {mz_range}")
+            count_negative += 1
+           # print(f"WARNING: Negative m/z range detected: {mz_range}")
 #------------------------------------------------------------------------------------------------------------------------
         if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range): #please go to line 243 or 263 i dont remember
             invalid_spec_list.append(i)
@@ -548,6 +549,8 @@ def preprocess_read_spectra_list(
     print(f"Filtered by m/z range: {count_mz_range_filter}")
     print(f"Filtered by precursor removal: {count_precursor_filter}")
     print(f"Filtered by intensity: {count_intensity_filter}")
+    print(f"Number of negative: {count_negative}")
+
             
     print(f"Invalid spectra count {len(invalid_spec_list)}")
     # Delete invalid spectrum
