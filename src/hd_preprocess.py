@@ -508,7 +508,7 @@ def preprocess_read_spectra_list(
         # debug this shit
         if mz_range < 0:
             count_negative += 1
-           # print(f"WARNING: Negative m/z range detected: {mz_range}")
+            print(f"WARNING: Negative m/z range detected: {mz_range}")
 #------------------------------------------------------------------------------------------------------------------------
         if not _check_spectrum_valid(spectra_list[i][6], min_peaks, min_mz_range): #please go to line 243 or 263 i dont remember
             invalid_spec_list.append(i)
