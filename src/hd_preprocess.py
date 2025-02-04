@@ -497,7 +497,7 @@ def preprocess_read_spectra_list(
         
 #---------------------------------------------------------------------------------------------------------------------
         # check if spectrum is valid
-        spectra_list[i][6] = np.sort(spectra_list[i][6]) #_check_spectrun_valid was assuming spectra_list mz is sorted. making "spectrum_mz[-1] - spectrum_mz[0] >= min_mz_range" wrong
+        #spectra_list[i][6] = np.sort(spectra_list[i][6]) #_check_spectrun_valid was assuming spectra_list mz is sorted. making "spectrum_mz[-1] - spectrum_mz[0] >= min_mz_range" wrong
                                                         # found an important bug after 4 hours i feel good now
         # calculate again please
         if len(spectra_list[i][6]) > 1:
