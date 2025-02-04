@@ -497,7 +497,7 @@ def preprocess_read_spectra_list(
         
 #---------------------------------------------------------------------------------------------------------------------
         # check if spectrum is valid
-        # spectra_list[i][6] = np.sort(spectra_list[i][6]) #_check_spectrun_valid was assuming spectra_list mz is sorted. making "spectrum_mz[-1] - spectrum_mz[0] >= min_mz_range" wrong
+        spectra_list[i][6] = np.sort(spectra_list[i][6]) #_check_spectrun_valid was assuming spectra_list mz is sorted. making "spectrum_mz[-1] - spectrum_mz[0] >= min_mz_range" wrong
                                                         # found an important bug after 4 hours i feel good now
         # calculate again please
         if len(spectra_list[i][6]) > 1:
@@ -576,6 +576,7 @@ def load_process_single(
     file_type: Optional[str] = 'mgf',
     no_preprocess_filter: bool = False
 ):
+    #-----------------------------------------------------------------------------------------------
     #mgf mzml mzxml
     if no_preprocess_filter:
         min_peaks = 0
@@ -588,6 +589,7 @@ def load_process_single(
         min_intensity = 0.001
         max_peaks_used = 10000  # Arbitrary high number
         scaling = 'off'
+    #----------------------------------------------------------------------------------------------------
     spec_list = []
     
     if(file_type == "mgf"):
